@@ -1,0 +1,201 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+// schema.prisma
+
+model User {
+  id            String        @id @default(cuid())
+  email         String        @unique
+  name          String?
+  role          Role          @default(CUSTOMER)
+
+  company       Company?      @relation(fields: [companyId], references: [id])
+  companyId     String?
+
+  orders        Order[]
+  subscriptions Subscription[]
+  equipmentItems EquipmentRegistryItem[]
+
+  // 👇 ADD THIS
+  addresses     Address[]
+
+  createdAt     DateTime      @default(now())
+}
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+model Company {
+  id        String   @id @default(cuid())
+  name      String
+  users     User[]
+  addresses Address[]
+  createdAt DateTime @default(now())
+}
+
+model Address {
+  id        String   @id @default(cuid())
+
+  company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?
+
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+
+  orders    Order[]  // 👈 ADD THIS (inverse relation)
+
+  line1     String
+  line2     String?
+  city      String
+  state     String
+  zip       String
+  country   String   @default("US")
+}
+
+model Product {
+  id              String        @id @default(cuid())
+  category        ProductCategory
+  name            String
+  slug            String        @unique
+  description     String
+  priceCents      Int
+  depositPercent  Int?
+  leadTimeDays    Int?
+
+  certification   Certification? @relation(fields: [certificationId], references: [id])
+  certificationId String?
+
+  isSubscribable  Boolean @default(false)
+  active          Boolean @default(true)
+  images          String[]
+
+  createdAt       DateTime @default(now())
+
+  // 👇 ADD THESE INVERSE RELATIONS
+  orderItems      OrderItem[]
+  subscriptions   Subscription[]
+  equipmentItems  EquipmentRegistryItem[]
+  productionBatches ProductionBatch[]
+}
+
+enum ProductCategory {
+  EQUIPMENT
+  PACKAGING
+}
+
+model Certification {
+  id            String   @id @default(cuid())
+  type          String   // "UL", "NSF", "ETL"
+  listingNumber String
+  documentUrl   String
+  verifiedAt    DateTime?
+  expiresAt     DateTime?
+  products      Product[]
+}
+
+model Order {
+  id              String       @id @default(cuid())
+  user            User         @relation(fields: [userId], references: [id])
+  userId          String
+
+  status          OrderStatus  @default(PENDING_DEPOSIT)
+
+  items           OrderItem[]
+
+  depositPaidAt   DateTime?
+  balancePaidAt   DateTime?
+
+  stripeDepositPaymentIntentId String?
+  stripeBalancePaymentIntentId String?
+
+  shippingAddress Address? @relation(fields: [addressId], references: [id])
+  addressId       String?
+
+  estimatedShipDate DateTime?
+  shippedAt       DateTime?
+
+  createdAt       DateTime @default(now())
+
+  // 👇 ADD THIS
+  equipmentRegistryItems EquipmentRegistryItem[]
+}
+
+enum OrderStatus {
+  PENDING_DEPOSIT     // equipment: waiting on deposit payment
+  AWAITING_BALANCE    // equipment: deposit paid, sourcing/building, balance not yet due
+  PAID                // packaging: paid in full, or equipment: balance paid
+  IN_PRODUCTION        // equipment: factory order placed
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+model OrderItem {
+  id          String   @id @default(cuid())
+
+  order       Order    @relation(fields: [orderId], references: [id])
+  orderId     String
+
+  product     Product  @relation(fields: [productId], references: [id])
+  productId   String
+
+  quantity    Int
+  unitPriceCents Int
+}
+
+model Subscription {
+  id                    String   @id @default(cuid())
+
+  user                  User     @relation(fields: [userId], references: [id])
+  userId                String
+
+  product               Product  @relation(fields: [productId], references: [id])
+  productId             String
+
+  stripeSubscriptionId  String   @unique
+  status                String
+  intervalDays          Int
+
+  createdAt             DateTime @default(now())
+}
+
+model EquipmentRegistryItem {
+  id            String   @id @default(cuid())
+
+  user          User     @relation(fields: [userId], references: [id])
+  userId        String
+
+  product       Product  @relation(fields: [productId], references: [id])
+  productId     String
+
+  order         Order?   @relation(fields: [orderId], references: [id])
+  orderId       String?
+
+  installedAt   DateTime?
+  warrantyEndsAt DateTime?
+}
+
+model ProductionBatch {
+  id          String @id @default(cuid())
+
+  product     Product @relation(fields: [productId], references: [id])
+  productId   String
+
+  quantity    Int
+  status      String
+
+  eta         DateTime?
+}
