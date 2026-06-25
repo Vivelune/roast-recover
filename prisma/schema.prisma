@@ -16,22 +16,25 @@ datasource db {
 // schema.prisma
 
 model User {
-  id            String        @id @default(cuid())
-  email         String        @unique
-  name          String?
-  role          Role          @default(CUSTOMER)
+  id String @id @default(cuid())
 
-  company       Company?      @relation(fields: [companyId], references: [id])
-  companyId     String?
+  clerkId String @unique
 
-  orders        Order[]
+  email String @unique
+  name String?
+
+  role Role @default(CUSTOMER)
+
+  company Company? @relation(fields: [companyId], references: [id])
+  companyId String?
+
+  addresses Address[]
+
+  orders Order[]
   subscriptions Subscription[]
   equipmentItems EquipmentRegistryItem[]
 
-  // 👇 ADD THIS
-  addresses     Address[]
-
-  createdAt     DateTime      @default(now())
+  createdAt DateTime @default(now())
 }
 enum Role {
   CUSTOMER

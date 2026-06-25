@@ -9,15 +9,26 @@ const prisma = new PrismaClient({
   adapter,
 });
 
-
 async function main() {
   console.log("🌱 Seeding database...");
 
-  // -----------------------
+  // CLEAN DATABASE (optional for testing)
+  await prisma.equipmentRegistryItem.deleteMany();
+  await prisma.productionBatch.deleteMany();
+  await prisma.subscription.deleteMany();
+  await prisma.orderItem.deleteMany();
+  await prisma.order.deleteMany();
+  await prisma.address.deleteMany();
+  await prisma.company.deleteMany();
+  await prisma.product.deleteMany();
+  await prisma.certification.deleteMany();
+  await prisma.user.deleteMany();
+
+
   // USERS
-  // -----------------------
   const admin = await prisma.user.create({
     data: {
+      clerkId: "user_admin_test",
       email: "admin@roast.com",
       name: "Admin User",
       role: "ADMIN",
@@ -26,29 +37,36 @@ async function main() {
 
   const customer = await prisma.user.create({
     data: {
+      clerkId: "user_customer_test",
       email: "customer@roast.com",
       name: "John Customer",
       role: "CUSTOMER",
     },
   });
 
-  // -----------------------
-  // COMPANY + ADDRESS
-  // -----------------------
+
+  // COMPANY
+
   const company = await prisma.company.create({
     data: {
       name: "Roast Cafe LLC",
       users: {
-        connect: [{ id: customer.id }],
+        connect: {
+          id: customer.id,
+        },
       },
     },
   });
+
+
+  // ADDRESS
 
   const address = await prisma.address.create({
     data: {
       userId: customer.id,
       companyId: company.id,
-      line1: "123 Coffee St",
+      line1: "123 Coffee Street",
+      line2: "Suite 200",
       city: "Los Angeles",
       state: "CA",
       zip: "90001",
@@ -56,116 +74,152 @@ async function main() {
     },
   });
 
-  // -----------------------
+
+
   // CERTIFICATION
-  // -----------------------
+
   const cert = await prisma.certification.create({
     data: {
       type: "NSF",
       listingNumber: "NSF-12345",
-      documentUrl: "https://example.com/cert.pdf",
+      documentUrl: "https://example.com/nsf.pdf",
       verifiedAt: new Date(),
     },
   });
 
-  // -----------------------
+
+
   // PRODUCTS
-  // -----------------------
-  const espressoMachine = await prisma.product.create({
+
+  const machine = await prisma.product.create({
     data: {
-      name: "Espresso Machine X1",
-      slug: "espresso-machine-x1",
-      description: "High-end commercial espresso machine",
+      name: "RoastMaster X1 Espresso Machine",
+      slug: "roastmaster-x1",
+      description:
+        "Commercial espresso machine sourced directly from certified factory.",
       category: "EQUIPMENT",
-      priceCents: 500000,
+      priceCents: 850000,
       depositPercent: 30,
       leadTimeDays: 21,
+      certificationId: cert.id,
+      images: [
+        "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd",
+      ],
+    },
+  });
+
+
+  const grinder = await prisma.product.create({
+    data: {
+      name: "Industrial Coffee Grinder",
+      slug: "industrial-grinder",
+      description:
+        "Heavy duty grinder for commercial coffee shops.",
+      category: "EQUIPMENT",
+      priceCents: 250000,
+      depositPercent: 20,
+      leadTimeDays: 14,
       certificationId: cert.id,
       images: [],
     },
   });
 
-  const beansSubscription = await prisma.product.create({
+
+  const packaging = await prisma.product.create({
     data: {
-      name: "Roast Beans Monthly",
-      slug: "beans-monthly",
-      description: "Monthly coffee bean subscription",
+      name: "Premium Coffee Bags",
+      slug: "premium-coffee-bags",
+      description:
+        "Monthly packaging supply subscription.",
       category: "PACKAGING",
-      priceCents: 2500,
+      priceCents: 4500,
       isSubscribable: true,
       images: [],
     },
   });
 
-  // -----------------------
+
+
   // ORDER
-  // -----------------------
+
   const order = await prisma.order.create({
     data: {
       userId: customer.id,
       addressId: address.id,
       status: "PENDING_DEPOSIT",
+
+      estimatedShipDate: new Date(
+        Date.now() + 1000 * 60 * 60 * 24 * 21
+      ),
+
       items: {
         create: [
           {
-            productId: espressoMachine.id,
+            productId: machine.id,
             quantity: 1,
-            unitPriceCents: espressoMachine.priceCents,
+            unitPriceCents: machine.priceCents,
+          },
+          {
+            productId: grinder.id,
+            quantity: 1,
+            unitPriceCents: grinder.priceCents,
           },
         ],
       },
-      depositPaidAt: null,
-      balancePaidAt: null,
-      estimatedShipDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 21),
     },
   });
 
-  // -----------------------
+
+
   // SUBSCRIPTION
-  // -----------------------
+
   await prisma.subscription.create({
     data: {
       userId: customer.id,
-      productId: beansSubscription.id,
-      stripeSubscriptionId: "sub_test_123",
+      productId: packaging.id,
+      stripeSubscriptionId: "sub_test_roast_001",
       status: "active",
       intervalDays: 30,
     },
   });
 
-  // -----------------------
+
+
   // EQUIPMENT REGISTRY
-  // -----------------------
+
   await prisma.equipmentRegistryItem.create({
     data: {
       userId: customer.id,
-      productId: espressoMachine.id,
+      productId: machine.id,
       orderId: order.id,
-      installedAt: null,
-      warrantyEndsAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365),
+      installedAt: new Date(),
+      warrantyEndsAt: new Date(
+        Date.now() + 1000 * 60 * 60 * 24 * 365
+      ),
     },
   });
 
-  // -----------------------
-  // PRODUCTION BATCH
-  // -----------------------
+
+
+  // PRODUCTION
+
   await prisma.productionBatch.create({
     data: {
-      productId: espressoMachine.id,
-      quantity: 10,
-      status: "planned",
-      eta: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+      productId: machine.id,
+      quantity: 25,
+      status: "in_production",
+      eta: new Date(
+        Date.now() + 1000 * 60 * 60 * 24 * 20
+      ),
     },
   });
 
-  console.log("✅ Seeding complete");
+
+  console.log("✅ Seed complete");
 }
 
 main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
+  .catch(console.error)
   .finally(async () => {
     await prisma.$disconnect();
   });
