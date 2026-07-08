@@ -146,6 +146,15 @@ enum OrderStatus {
   CANCELLED
 }
 
+enum OrderItemStatus {
+  PENDING_DEPOSIT
+  AWAITING_BALANCE
+  IN_PRODUCTION
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
 model OrderItem {
   id          String   @id @default(cuid())
 
@@ -155,8 +164,19 @@ model OrderItem {
   product     Product  @relation(fields: [productId], references: [id])
   productId   String
 
-  quantity    Int
+  quantity       Int
   unitPriceCents Int
+
+  // Equipment-specific per-item tracking
+  // Packaging orders leave these null
+  depositPercent Int?
+  itemStatus     OrderItemStatus @default(PENDING_DEPOSIT)
+  depositPaidAt  DateTime?
+  balancePaidAt  DateTime?
+  stripeDepositPaymentIntentId String?
+  stripeBalancePaymentIntentId String?
+  estimatedShipDate            DateTime?
+  shippedAt                    DateTime?
 }
 
 model Subscription {

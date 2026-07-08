@@ -1,13 +1,16 @@
-import Footer from "@/components/Footer";
 import Nav from "@/components/Nav";
-import { CartProvider } from "@/lib/cart";
+import Footer from "@/components/Footer";
 
-export default function StorefrontLayout({ children }: { children: React.ReactNode }) {
+export default function StorefrontLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <CartProvider>
+    <>
       <Nav />
-      {children}
-      
-    </CartProvider>
+      <main className="min-h-screen">{children}</main>
+      <Footer />
+    </>
   );
 }

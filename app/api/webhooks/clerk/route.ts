@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 import { Webhook } from "svix";
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;

@@ -1,7 +1,7 @@
 
 import Link from "next/link";
 import FadeIn from "@/components/FadeIn";
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import Image from "next/image";
 
 export default async function PackagingPage() {

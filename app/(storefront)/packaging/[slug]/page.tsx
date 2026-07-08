@@ -1,9 +1,8 @@
-
 import { notFound } from "next/navigation";
-// import AddToCartButton from "@/components/AddToCartButton";
 import { RefreshCw } from "lucide-react";
-import prisma from "@/lib/prisma";
 import Image from "next/image";
+import AddToCartButton from "@/components/AddToCartButton";
+import { prisma } from "@/lib/prisma";
 
 export default async function PackagingDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -32,11 +31,9 @@ export default async function PackagingDetailPage({ params }: { params: Promise<
           </div>
         )}
 
-        <button>AddToCartButton</button>
-{/* 
         <AddToCartButton
           product={{ productId: product.id, slug: product.slug, name: product.name, priceCents: product.priceCents }}
-        /> */}
+        />
       </div>
     </div>
   );

@@ -1,6 +1,8 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
 @theme {
+  /* Brand tokens — used as bg-ember, text-ash, etc. */
   --color-char: #0E0B08;
   --color-dark-roast: #2A2118;
   --color-ember: #B5481F;
@@ -11,13 +13,43 @@
 
   --font-display: var(--font-display-family), sans-serif;
   --font-body: var(--font-body-family), sans-serif;
+
+  --radius: 0.5rem;
+}
+
+/* shadcn semantic tokens — used internally by shadcn components */
+:root {
+  --background: #ffffff;
+  --foreground: #0E0B08;
+  --card: #ffffff;
+  --card-foreground: #0E0B08;
+  --popover: #ffffff;
+  --popover-foreground: #0E0B08;
+  --primary: #B5481F;
+  --primary-foreground: #ffffff;
+  --secondary: #F2EDE6;
+  --secondary-foreground: #0E0B08;
+  --muted: #F2EDE6;
+  --muted-foreground: #7A6A58;
+  --accent: #F2EDE6;
+  --accent-foreground: #0E0B08;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #e5e1db;
+  --input: #e5e1db;
+  --ring: #B5481F;
 }
 
 @layer base {
+  * {
+    border-color: var(--border);
+  }
   body {
+    background-color: var(--background);
+    color: var(--foreground);
     -webkit-font-smoothing: antialiased;
   }
-  h1, h2, h3 {
+  h1, h2, h3, h4 {
     font-family: var(--font-display);
     letter-spacing: -0.01em;
   }
