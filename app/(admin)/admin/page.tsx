@@ -2,9 +2,11 @@ import { prisma } from "@/lib/prisma";
 import RevenueChart from "@/components/admin/RevenueChart";
 import { Card } from "@/components/ui/card";
 import {
-  DollarSign, ShoppingBag, Wrench, AlertTriangle,
+  DollarSign, ShoppingBag, Wrench, AlertTriangle, Factory,
 } from "lucide-react";
 import Link from "next/link";
+
+export const dynamic = "force-dynamic";
 
 export default async function AdminOverviewPage() {
   const now = new Date();
@@ -12,18 +14,27 @@ export default async function AdminOverviewPage() {
   const sixtyDaysFromNow = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000);
 
   const [
-    paidOrders,
-    pendingDepositOrders,
-    awaitingBalanceOrders,
+    revenueOrders,
+    actionRequiredOrders,
     expiringCerts,
     recentOrders,
   ] = await Promise.all([
     prisma.order.findMany({
-      where: { status: "PAID", createdAt: { gte: thirtyDaysAgo } },
+      where: {
+        createdAt: { gte: thirtyDaysAgo },
+        status: {
+          in: ["PAID", "AWAITING_BALANCE", "IN_PRODUCTION", "SHIPPED", "DELIVERED"],
+        },
+      },
       include: { items: true },
     }),
-    prisma.order.count({ where: { status: "PENDING_DEPOSIT" } }),
-    prisma.order.count({ where: { status: "AWAITING_BALANCE" } }),
+    prisma.order.groupBy({
+      by: ["status"],
+      where: {
+        status: { in: ["PENDING_DEPOSIT", "AWAITING_BALANCE", "IN_PRODUCTION"] },
+      },
+      _count: true,
+    }),
     prisma.certification.findMany({
       where: { expiresAt: { lte: sixtyDaysFromNow } },
       include: { products: true },
@@ -35,12 +46,43 @@ export default async function AdminOverviewPage() {
     }),
   ]);
 
-  const totalRevenue = paidOrders.reduce(
-    (sum, o) => sum + o.items.reduce((s, i) => s + i.unitPriceCents * i.quantity, 0),
-    0
+  // Extract counts from groupBy result
+  const statusCounts = actionRequiredOrders.reduce(
+    (acc, g) => ({ ...acc, [g.status]: g._count }),
+    {} as Record<string, number>
   );
+  const pendingDepositCount = statusCounts["PENDING_DEPOSIT"] ?? 0;
+  const awaitingBalanceCount = statusCounts["AWAITING_BALANCE"] ?? 0;
+  const inProductionCount = statusCounts["IN_PRODUCTION"] ?? 0;
 
-  // Build daily revenue data for chart (last 14 days)
+  // Revenue = money actually collected
+  function calcRevenue(orders: typeof revenueOrders): number {
+    return orders.reduce((sum, o) => {
+      return (
+        sum +
+        o.items.reduce((s, i) => {
+          if (i.depositPercent) {
+            // Equipment: deposit is always collected once order exists here
+            const deposit =
+              Math.round((i.unitPriceCents * i.depositPercent) / 100) *
+              i.quantity;
+            // Add balance only if it's actually been paid
+            const balance =
+              i.balancePaidAt !== null
+                ? i.unitPriceCents * i.quantity - deposit
+                : 0;
+            return s + deposit + balance;
+          }
+          // Packaging: full price collected
+          return s + i.unitPriceCents * i.quantity;
+        }, 0)
+      );
+    }, 0);
+  }
+
+  const totalRevenue = calcRevenue(revenueOrders);
+
+  // Last 14 days for chart
   const days = Array.from({ length: 14 }, (_, i) => {
     const d = new Date(now);
     d.setDate(d.getDate() - (13 - i));
@@ -48,13 +90,10 @@ export default async function AdminOverviewPage() {
   });
 
   const revenueByDay = days.map((day) => ({
-    date: day.slice(5), // MM-DD
-    revenue: paidOrders
-      .filter((o) => o.createdAt.toISOString().startsWith(day))
-      .reduce(
-        (sum, o) =>
-          sum + o.items.reduce((s, i) => s + i.unitPriceCents * i.quantity, 0),
-        0
+    date: day.slice(5),
+    revenue:
+      calcRevenue(
+        revenueOrders.filter((o) => o.createdAt.toISOString().startsWith(day))
       ) / 100,
   }));
 
@@ -63,31 +102,33 @@ export default async function AdminOverviewPage() {
       label: "Revenue (30d)",
       value: `$${(totalRevenue / 100).toFixed(0)}`,
       icon: DollarSign,
-      sub: "from paid orders",
+      sub: "deposits + packaging collected",
+      alert: false,
+      href: undefined,
     },
     {
       label: "Pending deposit",
-      value: pendingDepositOrders,
+      value: pendingDepositCount,
       icon: ShoppingBag,
-      sub: "need action",
+      sub: "awaiting deposit payment",
       href: "/admin/orders?status=PENDING_DEPOSIT",
-      alert: pendingDepositOrders > 0,
+      alert: pendingDepositCount > 0,
     },
     {
       label: "Awaiting balance",
-      value: awaitingBalanceOrders,
+      value: awaitingBalanceCount,
       icon: Wrench,
-      sub: "ready to invoice",
+      sub: "ready to invoice balance",
       href: "/admin/orders?status=AWAITING_BALANCE",
-      alert: awaitingBalanceOrders > 0,
+      alert: awaitingBalanceCount > 0,
     },
     {
-      label: "Certs expiring",
-      value: expiringCerts.length,
-      icon: AlertTriangle,
-      sub: "within 60 days",
-      href: "/admin/certifications",
-      alert: expiringCerts.length > 0,
+      label: "In production",
+      value: inProductionCount,
+      icon: Factory,
+      sub: "balance paid, being built",
+      href: "/admin/orders?status=IN_PRODUCTION",
+      alert: false,
     },
   ];
 
@@ -102,9 +143,11 @@ export default async function AdminOverviewPage() {
         {stats.map(({ label, value, icon: Icon, sub, href, alert }) => {
           const inner = (
             <Card
-              className={`p-4 ${alert ? "border-amber-300 bg-amber-50/30" : ""}`}
+              className={`p-4 h-full ${
+                alert ? "border-amber-300 bg-amber-50/30" : ""
+              }`}
             >
-              <div className="flex items-center justify-between mb-3">
+              <div className="mb-3">
                 <Icon
                   size={16}
                   className={alert ? "text-amber-500" : "text-ash"}
@@ -113,12 +156,14 @@ export default async function AdminOverviewPage() {
               <p className="font-display font-semibold text-2xl text-char">
                 {value}
               </p>
-              <p className="text-xs text-ash mt-0.5">{label}</p>
+              <p className="text-xs font-medium text-ash mt-0.5">{label}</p>
               <p className="text-xs text-ash/60 mt-0.5">{sub}</p>
             </Card>
           );
           return href ? (
-            <Link key={label} href={href}>{inner}</Link>
+            <Link key={label} href={href} className="block">
+              {inner}
+            </Link>
           ) : (
             <div key={label}>{inner}</div>
           );
@@ -127,9 +172,12 @@ export default async function AdminOverviewPage() {
 
       {/* Revenue chart */}
       <Card className="p-5 mb-8">
-        <p className="text-sm font-medium text-char mb-4">
-          Revenue — last 14 days
-        </p>
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-sm font-medium text-char">Revenue — last 14 days</p>
+          <p className="text-xs text-ash">
+            Packaging (full) + Equipment (deposit)
+          </p>
+        </div>
         <RevenueChart data={revenueByDay} />
       </Card>
 
@@ -141,44 +189,51 @@ export default async function AdminOverviewPage() {
             View all →
           </Link>
         </div>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-xs text-ash border-b border-border">
-              <th className="text-left pb-2 font-medium">Customer</th>
-              <th className="text-left pb-2 font-medium">Item</th>
-              <th className="text-left pb-2 font-medium">Status</th>
-              <th className="text-left pb-2 font-medium">Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {recentOrders.map((order) => (
-              <tr key={order.id} className="border-b border-border/50 last:border-0">
-                <td className="py-2.5">
-                  <Link
-                    href={`/admin/orders/${order.id}`}
-                    className="text-ember hover:underline"
-                  >
-                    {order.user.email}
-                  </Link>
-                </td>
-                <td className="py-2.5 text-char">
-                  {order.items[0]?.product.name}
-                  {order.items.length > 1 && (
-                    <span className="text-ash"> +{order.items.length - 1}</span>
-                  )}
-                </td>
-                <td className="py-2.5">
-                  <span className="text-xs uppercase tracking-wide text-ash bg-steam px-2 py-0.5 rounded">
-                    {order.status.replace(/_/g, " ")}
-                  </span>
-                </td>
-                <td className="py-2.5 text-ash">
-                  {new Date(order.createdAt).toLocaleDateString()}
-                </td>
+        {recentOrders.length === 0 ? (
+          <p className="text-sm text-ash py-4 text-center">No orders yet.</p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-xs text-ash border-b border-border">
+                <th className="text-left pb-2 font-medium">Customer</th>
+                <th className="text-left pb-2 font-medium">Item</th>
+                <th className="text-left pb-2 font-medium">Status</th>
+                <th className="text-left pb-2 font-medium">Date</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {recentOrders.map((order) => (
+                <tr
+                  key={order.id}
+                  className="border-b border-border/50 last:border-0"
+                >
+                  <td className="py-2.5">
+                    <Link
+                      href={`/admin/orders/${order.id}`}
+                      className="text-ember hover:underline"
+                    >
+                      {order.user.email}
+                    </Link>
+                  </td>
+                  <td className="py-2.5 text-char">
+                    {order.items[0]?.product.name}
+                    {order.items.length > 1 && (
+                      <span className="text-ash"> +{order.items.length - 1}</span>
+                    )}
+                  </td>
+                  <td className="py-2.5">
+                    <span className="text-xs uppercase tracking-wide text-ash bg-steam px-2 py-0.5 rounded">
+                      {order.status.replace(/_/g, " ")}
+                    </span>
+                  </td>
+                  <td className="py-2.5 text-ash">
+                    {new Date(order.createdAt).toLocaleDateString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </Card>
     </div>
   );

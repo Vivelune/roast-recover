@@ -54,9 +54,24 @@ export default function CheckoutClient({
         selectedId
       );
       if (checkoutUrl) window.location.href = checkoutUrl;
-      else throw new Error();
+      else throw new Error("No checkout URL returned");
     } catch (e: any) {
-      setError(e?.message ?? "Something went wrong. Please try again.");
+      const raw = e?.message ?? "";
+  
+      // Translate common errors into friendly messages
+      const friendly = raw.includes("card")
+        ? "Your card was declined. Try a different card or contact your bank."
+        : raw.includes("unavailable") || raw.includes("not found")
+        ? "One of your items is no longer available. Please refresh and try again."
+        : raw.includes("address")
+        ? "Please add a shipping address before checking out."
+        : raw.includes("signed in") || raw.includes("Unauthorized")
+        ? "Your session expired. Please sign in again."
+        : raw.includes("Cart is empty")
+        ? "Your cart is empty. Add items before checking out."
+        : raw || "Something went wrong starting checkout. Please try again.";
+  
+      setError(friendly);
       setLoading(false);
     }
   }
@@ -155,7 +170,7 @@ export default function CheckoutClient({
           <Button
             onClick={handlePay}
             disabled={loading || !selectedId || showForm}
-            className="w-full bg-ember hover:bg-ember-dark disabled:opacity-50 h-12 text-sm font-medium mt-8"
+            className="w-full bg-ember text-white hover:bg-ember-dark disabled:opacity-50 h-12 text-sm font-medium mt-8"
           >
             {loading ? (
               <>

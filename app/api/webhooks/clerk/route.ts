@@ -45,14 +45,18 @@ export async function POST(req: Request) {
     const user = event.data;
 
 
-    await prisma.user.create({
-      data: {
-        clerkId: user.id,
-        email: user.email_addresses[0].email_address,
-        name:
-          `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim(),
-      },
-    });
+    try {
+      await prisma.user.create({
+        data: {
+          clerkId: user.id,
+          email: user.email_addresses[0].email_address,
+          name: `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim(),
+        },
+      });
+    } catch (err) {
+      console.error(err);
+      return new Response("Database error", { status: 500 });
+    }
   }
 
 

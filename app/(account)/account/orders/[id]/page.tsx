@@ -4,14 +4,20 @@ import { notFound, redirect } from "next/navigation";
 import { CheckCircle2, Clock, Package } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import CartClearer from "@/components/CartClearer";
+
+
+
+export const dynamic = "force-dynamic"; // ← prevents caching of this page
+export const revalidate = 0;
 
 const itemStatusLabel: Record<string, { label: string; color: string }> = {
-  PENDING_DEPOSIT:  { label: "Awaiting deposit",  color: "text-yellow-600" },
-  AWAITING_BALANCE: { label: "Deposit paid — balance due", color: "text-blue-600" },
-  IN_PRODUCTION:    { label: "In production",     color: "text-purple-600" },
-  SHIPPED:          { label: "Shipped",            color: "text-indigo-600" },
-  DELIVERED:        { label: "Delivered",          color: "text-green-600" },
-  CANCELLED:        { label: "Cancelled",          color: "text-red-600" },
+  PENDING_DEPOSIT:  { label: "Awaiting deposit",              color: "text-yellow-600 bg-yellow-50" },
+  AWAITING_BALANCE: { label: "Deposit paid — balance due",    color: "text-blue-600 bg-blue-50" },
+  IN_PRODUCTION:    { label: "In production",                 color: "text-purple-600 bg-purple-50" },
+  SHIPPED:          { label: "Shipped",                       color: "text-indigo-600 bg-indigo-50" },
+  DELIVERED:        { label: "Delivered",                     color: "text-green-600 bg-green-50" },
+  CANCELLED:        { label: "Cancelled",                     color: "text-red-600 bg-red-50" },
 };
 
 export default async function OrderDetailPage({
@@ -46,11 +52,16 @@ export default async function OrderDetailPage({
     <div>
       {/* Success banner */}
       {success && (
-        <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-800 rounded-lg px-4 py-3 mb-6 text-sm">
-          <CheckCircle2 size={16} />
-          Payment confirmed — your order is being processed.
-        </div>
-      )}
+  <>
+    <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-800 rounded-lg px-4 py-3 mb-6 text-sm">
+      <CheckCircle2 size={16} />
+      Payment confirmed — your order is being processed.
+    </div>
+    {/* Clear the right cart based on order type */}
+    <CartClearer type={isEquipmentOrder ? "equipment" : "packaging"} />
+  </>
+)}
+      
 
       <div className="flex items-start justify-between mb-6">
         <div>
@@ -82,6 +93,14 @@ export default async function OrderDetailPage({
               ? Math.round((item.unitPriceCents * (item.depositPercent ?? 0)) / 100)
               : null;
 
+              const depositPercent = item.depositPercent ?? 0;
+const depositPaid = depositPercent > 0
+  ? Math.round((item.unitPriceCents * depositPercent) / 100) * item.quantity
+  : null;
+const balanceOwed = depositPaid !== null
+  ? (item.unitPriceCents * item.quantity) - depositPaid
+  : null;
+
             return (
               <div key={item.id}>
                 <div className="flex items-start justify-between gap-4">
@@ -103,7 +122,7 @@ export default async function OrderDetailPage({
                       </p>
                     )}
                   </div>
-                  <div className="text-right flex-shrink-0">
+                  <div className="text-right shrink-0">
                     <p className="text-sm text-char">
                       ${((item.unitPriceCents * item.quantity) / 100).toFixed(2)}
                     </p>
@@ -112,6 +131,14 @@ export default async function OrderDetailPage({
                         ${((deposit * item.quantity) / 100).toFixed(2)} deposit paid
                       </p>
                     )}
+                    {depositPaid !== null && (
+  <p className="text-xs text-ash">
+    ${(depositPaid / 100).toFixed(2)} deposit paid
+    {item.itemStatus === "AWAITING_BALANCE" && balanceOwed && (
+      <span className="text-blue-600"> · ${(balanceOwed / 100).toFixed(2)} balance due</span>
+    )}
+  </p>
+)}
                   </div>
                 </div>
               </div>

@@ -155,7 +155,7 @@ export default function EquipmentCheckoutClient({
           <Button
             onClick={handlePay}
             disabled={loading || !selectedId || showForm}
-            className="w-full bg-ember hover:bg-ember-dark disabled:opacity-50 h-12 text-sm font-medium mt-8"
+            className="w-full bg-ember text-white hover:bg-ember-dark disabled:opacity-50 h-12 text-sm font-medium mt-8"
           >
             {loading ? (
               <><Loader2 size={15} className="animate-spin mr-2" />Redirecting...</>

@@ -3,16 +3,18 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
   LayoutDashboard, ClipboardList, Package,
-  ShieldCheck, Users, Factory,
+  ShieldCheck, Users, Factory, MessageSquare, Star,
 } from "lucide-react";
 
 const adminLinks = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard },
   { href: "/admin/orders", label: "Orders", icon: ClipboardList },
   { href: "/admin/products", label: "Products", icon: Package },
+  { href: "/admin/leads", label: "Leads", icon: MessageSquare },
   { href: "/admin/certifications", label: "Certifications", icon: ShieldCheck },
   { href: "/admin/customers", label: "Customers", icon: Users },
   { href: "/admin/batches", label: "Production", icon: Factory },
+  { href: "/admin/testimonials", label: "Testimonials", icon: Star },
 ];
 
 export default async function AdminLayout({
@@ -25,7 +27,7 @@ export default async function AdminLayout({
 
   return (
     <div className="min-h-screen flex">
-      <aside className="hidden md:flex flex-col w-56 bg-graphite px-4 py-8 gap-1 flex-shrink-0">
+      <aside className="hidden md:flex flex-col w-56 bg-graphite px-4 py-8 gap-1 shrink-0">
         <p className="text-xs uppercase tracking-wide text-gray-400 px-3 mb-3">
           roast&amp;recover
         </p>
