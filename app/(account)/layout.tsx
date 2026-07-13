@@ -21,7 +21,7 @@ export default async function AccountLayout({
 
   return (
     <div className="min-h-screen flex">
-      <aside className="hidden md:flex flex-col w-56 border-r border-border bg-[#FAFAF9] px-4 py-8 gap-1 flex-shrink-0">
+      <aside className="hidden md:flex flex-col w-56 border-r border-border bg-[#FAFAF9] px-4 py-8 gap-1 shrink-0">
         <p className="text-xs uppercase tracking-wide text-ash px-3 mb-3">
           My account
         </p>

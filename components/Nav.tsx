@@ -26,7 +26,10 @@ import SignOutButton from "./SignOutButton";
 const navLinks = [
   { href: "/equipment", label: "Equipment" },
   { href: "/packaging", label: "Packaging" },
+  { href: "/why-roastandrecover", label: "Why us" },
   { href: "/how-it-works", label: "How it works" },
+  
+  { href: "/contact", label: "Contact" },
 ];
 
 export default function Nav() {
@@ -83,7 +86,7 @@ export default function Nav() {
               {active && (
                 <motion.div
                   layoutId="nav-active"
-                  className="absolute left-3 right-3 -bottom-[1px] h-[2px] bg-ember rounded-full"
+                  className="absolute left-3 right-3 -bottom-px h-[2px] bg-ember rounded-full"
                   transition={{ type: "spring", stiffness: 380, damping: 30 }}
                 />
               )}
@@ -169,7 +172,7 @@ export default function Nav() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button asChild size="sm" className="bg-ember hover:bg-ember-dark">
+            <Button asChild size="sm" className="bg-ember text-white hover:bg-ember-dark">
               <Link href="/sign-in">Sign in</Link>
             </Button>
           )}

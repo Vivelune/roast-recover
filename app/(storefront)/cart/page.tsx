@@ -130,11 +130,11 @@ export default function CartPage() {
 
       <Button
         asChild
-        className="w-full bg-ember hover:bg-ember-dark mt-5 h-12 text-sm font-medium"
+        className="w-full bg-ember text-white hover:bg-ember-dark mt-5 h-12 text-sm font-medium"
       >
         <Link
           href="/checkout"
-          className="flex items-center justify-center gap-2"
+          className="flex items-center justify-center  gap-2"
         >
           Continue to checkout <ArrowRight size={15} />
         </Link>

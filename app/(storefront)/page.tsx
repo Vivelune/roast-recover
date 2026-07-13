@@ -3,8 +3,15 @@ import { ShieldCheck, Building2, PackageCheck, ArrowRight, Factory, FileCheck2, 
 import FadeIn from "@/components/FadeIn";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import Image from "next/image";
+import { prisma } from "@/lib/prisma";
+import TestimonialCard from "@/components/TestimonialCard";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const testimonials = await prisma.testimonial.findMany({
+    where: { active: true },
+    orderBy: [{ featured: "desc" }, { sortOrder: "asc" }],
+    take: 6,
+  });
   return (
     <div>
       {/* HERO */}
@@ -114,9 +121,46 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* TESTIMONIAL SECTION */}
+{testimonials.length > 0 && (
+  <section className="max-w-6xl mx-auto px-8 py-20">
+    <FadeIn>
+      <div className="flex items-end justify-between mb-12">
+        <div>
+          <p className="text-xs uppercase tracking-[0.15em] text-ember font-medium mb-3">
+            From the field
+          </p>
+          <h2 className="font-display font-semibold text-3xl text-char max-w-md">
+            What café operators say after switching.
+          </h2>
+        </div>
+        <p className="text-ash text-sm max-w-xs text-right hidden md:block leading-relaxed">
+          Real feedback from independent operators and growing café groups.
+        </p>
+      </div>
+    </FadeIn>
+
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      {testimonials.map((t, i) => (
+        <FadeIn key={t.id} delay={i * 0.06}>
+          <TestimonialCard
+            name={t.name}
+            role={t.role}
+            company={t.company}
+            location={t.location}
+            quote={t.quote}
+            avatarUrl={t.avatarUrl}
+            featured={t.featured}
+          />
+        </FadeIn>
+      ))}
+    </div>
+  </section>
+)}
+
       {/* CTA BAND */}
       <section className="bg-ember">
-        <div className="max-w-6xl mx-auto px-8 py-16 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="max-w-6xl mx-auto px-8 py-16 flex flex-col md:flex-row items-center justify-between gap-6"> 
           <FadeIn>
             <h2 className="font-display font-semibold text-2xl text-white max-w-md">
               Ready to cut out the middlemen?

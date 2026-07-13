@@ -135,7 +135,7 @@ export default function AddressesClient({
               <button
                 onClick={() => handleDelete(addr.id)}
                 disabled={deleting === addr.id}
-                className="text-ash hover:text-red-500 transition-colors ml-4 flex-shrink-0"
+                className="text-ash hover:text-red-500 transition-colors ml-4 shrink-0"
                 aria-label="Delete address"
               >
                 {deleting === addr.id ? (

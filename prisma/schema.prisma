@@ -31,6 +31,7 @@ model User {
   addresses Address[]
 
   orders Order[]
+   reviews   Review[]
   subscriptions Subscription[]
   equipmentItems EquipmentRegistryItem[]
 
@@ -77,6 +78,7 @@ model Product {
   priceCents      Int
   depositPercent  Int?
   leadTimeDays    Int?
+  reviews   Review[]
 
   certification   Certification? @relation(fields: [certificationId], references: [id])
   certificationId String?
@@ -84,7 +86,7 @@ model Product {
   isSubscribable  Boolean @default(false)
   active          Boolean @default(true)
   images          String[]
-
+  stripePriceId   String?   // Stripe recurring Price ID — subscriptions only
   createdAt       DateTime @default(now())
 
   // 👇 ADD THESE INVERSE RELATIONS
@@ -94,6 +96,8 @@ model Product {
   productionBatches ProductionBatch[]
 }
 
+
+
 enum ProductCategory {
   EQUIPMENT
   PACKAGING
@@ -101,11 +105,14 @@ enum ProductCategory {
 
 model Certification {
   id            String   @id @default(cuid())
-  type          String   // "UL", "NSF", "ETL"
+  type          String
   listingNumber String
   documentUrl   String
   verifiedAt    DateTime?
   expiresAt     DateTime?
+
+  createdAt     DateTime @default(now())
+
   products      Product[]
 }
 
@@ -137,6 +144,7 @@ model Order {
 }
 
 enum OrderStatus {
+  PENDING
   PENDING_DEPOSIT     // equipment: waiting on deposit payment
   AWAITING_BALANCE    // equipment: deposit paid, sourcing/building, balance not yet due
   PAID                // packaging: paid in full, or equipment: balance paid
@@ -206,19 +214,79 @@ model EquipmentRegistryItem {
 
   order         Order?   @relation(fields: [orderId], references: [id])
   orderId       String?
+  
 
   installedAt   DateTime?
   warrantyEndsAt DateTime?
 }
 
 model ProductionBatch {
-  id          String @id @default(cuid())
-
-  product     Product @relation(fields: [productId], references: [id])
+  id          String   @id @default(cuid())
+  product     Product  @relation(fields: [productId], references: [id])
   productId   String
-
   quantity    Int
   status      String
-
   eta         DateTime?
+  createdAt   DateTime @default(now())  // ← add this
+}
+
+model Review {
+  id        String   @id @default(cuid())
+
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+
+  rating    Int      // 1–5
+  title     String?
+  body      String
+
+  // Only customers who actually ordered can review
+  verified  Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@unique([productId, userId]) // one review per product per user
+}
+
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUOTED
+  CONVERTED
+  LOST
+}
+
+model Lead {
+  id        String     @id @default(cuid())
+  name      String
+  email     String
+  company   String?
+  phone     String?
+  message   String
+  interest  String?    // "equipment" | "packaging" | "both" | "custom"
+  productId String?    // if from a specific product page quote button
+  status    LeadStatus @default(NEW)
+  notes     String?    // admin internal notes
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Testimonial {
+  id          String   @id @default(cuid())
+  name        String
+  role        String
+  company     String
+  location    String?
+  quote       String
+  logoUrl     String?
+  avatarUrl   String?
+  rating      Int      @default(5)
+  featured    Boolean  @default(false)
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
 }

@@ -65,7 +65,7 @@ export default function EquipmentCartPage() {
                 className="overflow-hidden"
               >
                 <div className="flex items-center gap-4 px-5 py-4">
-                  <div className="relative w-14 h-14 rounded-md bg-steam flex-shrink-0 overflow-hidden">
+                  <div className="relative w-14 h-14 rounded-md bg-steam shrink-0 overflow-hidden">
                     {item.image ? (
                       <Image
                         src={item.image}
@@ -144,7 +144,7 @@ export default function EquipmentCartPage() {
 
       <Button
         asChild
-        className="w-full bg-ember hover:bg-ember-dark mt-5 h-12 text-sm font-medium"
+        className="w-full bg-ember text-white hover:bg-ember-dark mt-5 h-12 text-sm font-medium"
       >
         <Link
           href="/equipment/checkout"

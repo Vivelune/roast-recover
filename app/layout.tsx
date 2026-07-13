@@ -2,6 +2,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { interTight, dmSans } from "./fonts";
 import StoreHydration from "@/components/StoreHydration";
 import "./globals.css";
+import Footer from "@/components/Footer";
 
 export default function RootLayout({
   children,
@@ -27,6 +28,7 @@ export default function RootLayout({
         <body className="font-body text-char bg-white antialiased">
           <StoreHydration />
           {children}
+          <Footer/>
         </body>
       </html>
     </ClerkProvider>

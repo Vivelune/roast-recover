@@ -11,7 +11,22 @@ export default async function AccountPage() {
 
   const [orders, equipment, subscriptions] = await Promise.all([
     prisma.order.findMany({
-      where: { userId: user.id },
+      where: {
+        userId: user.id,
+        OR: [
+          // Show all non-pending orders
+          {
+            status: {
+              notIn: ["PENDING", "PENDING_DEPOSIT"],
+            },
+          },
+          // Show PENDING_DEPOSIT only if deposit was actually paid
+          {
+            status: "PENDING_DEPOSIT",
+            depositPaidAt: { not: null },
+          },
+        ],
+      },
       include: { items: { include: { product: true } } },
       orderBy: { createdAt: "desc" },
       take: 3,

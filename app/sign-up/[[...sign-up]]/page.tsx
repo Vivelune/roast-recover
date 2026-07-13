@@ -5,7 +5,7 @@ export default function SignInPage() {
     <div className="min-h-screen flex items-center justify-center bg-[#F2EDE6]">
       <div className="w-full max-w-sm">
       <p className="text-center font-medium text-2xl mb-6 text-black">
-          Roast<span className="text-[#B5481F]">&amp;</span>Recover
+          roast<span className="text-[#B5481F]">&amp;</span>recover
         </p>
         <SignUp
           appearance={{

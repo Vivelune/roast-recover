@@ -35,26 +35,98 @@ export default async function AdminOrderDetailPage({
   );
 
   async function handleStatusUpdate(formData: FormData) {
-    "use server";
-    const itemId = formData.get("itemId") as string;
-    const status = formData.get("status") as string;
-    await prisma.orderItem.update({
+  "use server";
+  const itemId = formData.get("itemId") as string;
+  const newStatus = formData.get("status") as string;
+
+  // 1. Update the specific item
+  const item = await prisma.orderItem.update({
+    where: { id: itemId },
+    data: { itemStatus: newStatus as any },
+  });
+
+  // 2. Re-read all items to calculate new order status
+  const allItems = await prisma.orderItem.findMany({
+    where: { orderId: item.orderId },
+  });
+
+  const allDelivered = allItems.every((i) => i.itemStatus === "DELIVERED");
+  const allShipped = allItems.every((i) =>
+    ["SHIPPED", "DELIVERED"].includes(i.itemStatus ?? "")
+  );
+  const allInProduction = allItems.every((i) =>
+    ["IN_PRODUCTION", "SHIPPED", "DELIVERED"].includes(i.itemStatus ?? "")
+  );
+  const anyAwaitingBalance = allItems.some(
+    (i) => i.itemStatus === "AWAITING_BALANCE"
+  );
+
+  const newOrderStatus = allDelivered
+    ? "DELIVERED"
+    : allShipped
+    ? "SHIPPED"
+    : allInProduction
+    ? "IN_PRODUCTION"
+    : anyAwaitingBalance
+    ? "AWAITING_BALANCE"
+    : "PENDING_DEPOSIT";
+
+  // 3. Update order status
+  await prisma.order.update({
+    where: { id: item.orderId },
+    data: { status: newOrderStatus as any },
+  });
+
+  // 4. If marked DELIVERED → create equipment registry entry
+  if (newStatus === "DELIVERED") {
+    const deliveredItem = await prisma.orderItem.findUnique({
       where: { id: itemId },
-      data: { itemStatus: status as any },
+      include: { order: true },
     });
-    revalidatePath(`/admin/orders/${id}`);
+
+    if (deliveredItem) {
+      // Check if registry entry already exists to avoid duplicates
+      const existing = await prisma.equipmentRegistryItem.findFirst({
+        where: {
+          userId: deliveredItem.order.userId,
+          productId: deliveredItem.productId,
+          orderId: deliveredItem.orderId,
+        },
+      });
+
+      if (!existing) {
+        await prisma.equipmentRegistryItem.create({
+          data: {
+            userId: deliveredItem.order.userId,
+            productId: deliveredItem.productId,
+            orderId: deliveredItem.orderId,
+            installedAt: new Date(),
+            warrantyEndsAt: new Date(
+              Date.now() + 365 * 24 * 60 * 60 * 1000
+            ),
+          },
+        });
+      }
+    }
+
+    revalidatePath("/account/equipment");
   }
 
+  // 5. Revalidate both admin and customer views
+  revalidatePath(`/admin/orders/${item.orderId}`);
+  revalidatePath(`/account/orders/${item.orderId}`);
+  revalidatePath("/admin");
+}
+  
   async function handleSendBalance(formData: FormData) {
     "use server";
     const itemId = formData.get("itemId") as string;
-    const { checkoutUrl } = await createBalanceCheckoutForItem(itemId);
-    // In production: email this URL to customer via Resend
-    // For now: logged to console so you can test it manually
-    console.log("Balance checkout URL for item", itemId, ":", checkoutUrl);
+    const result = await createBalanceCheckoutForItem(itemId);
+    // Email is now sent inside createBalanceCheckoutForItem
+    // Log URL as fallback
+    console.log(`[admin] Balance URL for item ${itemId}:`, result.checkoutUrl);
     revalidatePath(`/admin/orders/${id}`);
   }
-
   const statusOptions = [
     "PENDING_DEPOSIT", "AWAITING_BALANCE", "IN_PRODUCTION",
     "SHIPPED", "DELIVERED", "CANCELLED",
@@ -92,10 +164,14 @@ export default async function AdminOrderDetailPage({
                       {item.product.name} × {item.quantity}
                     </p>
                     <p className="text-xs text-ash mt-0.5">
-                      ${((item.unitPriceCents * item.quantity) / 100).toFixed(2)}
-                      {deposit !== null &&
-                        ` · $${((deposit * item.quantity) / 100).toFixed(2)} deposit paid`}
-                    </p>
+  ${((item.unitPriceCents * item.quantity) / 100).toFixed(2)}
+  {deposit !== null && item.depositPaidAt && (
+    ` · $${((deposit * item.quantity) / 100).toFixed(2)} deposit received`
+  )}
+  {deposit !== null && !item.depositPaidAt && (
+    ` · $${((deposit * item.quantity) / 100).toFixed(2)} deposit pending`
+  )}
+</p>
                     {isEquipment && (
                       <p className="text-xs text-blue-600 mt-1">
                         {itemStatusLabel[item.itemStatus ?? "PENDING_DEPOSIT"]}

@@ -20,7 +20,22 @@ export default async function OrdersPage() {
   if (!user) redirect("/sign-in");
 
   const orders = await prisma.order.findMany({
-    where: { userId: user.id },
+    where: {
+      userId: user.id,
+      OR: [
+        // Show all non-pending orders
+        {
+          status: {
+            notIn: ["PENDING", "PENDING_DEPOSIT"],
+          },
+        },
+        // Show PENDING_DEPOSIT only if deposit was actually paid
+        {
+          status: "PENDING_DEPOSIT",
+          depositPaidAt: { not: null },
+        },
+      ],
+    },
     include: { items: { include: { product: true } } },
     orderBy: { createdAt: "desc" },
   });
@@ -61,7 +76,7 @@ export default async function OrdersPage() {
                     </p>
                   </div>
                   <span
-                    className={`text-xs px-2.5 py-1 rounded-md font-medium ml-4 flex-shrink-0 ${
+                    className={`text-xs px-2.5 py-1 rounded-md font-medium ml-4 shrink-0 ${
                       statusColor[order.status] ?? "bg-gray-100 text-gray-600"
                     }`}
                   >
