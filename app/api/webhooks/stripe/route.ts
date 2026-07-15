@@ -5,6 +5,8 @@ import {
   sendOrderConfirmationEmail,
   sendSubscriptionConfirmationEmail,
 } from "@/lib/email";
+import { qualifyReferral, trackReferral } from "@/app/actions/referral";
+import { markOnboardingStep } from "@/app/actions/onboarding";
 
 export async function POST(req: Request) {
   const body = await req.text();
@@ -52,7 +54,35 @@ export async function POST(req: Request) {
           data: { status: "PAID" },
           include: { items: { include: { product: true } }, user: true },
         });
+
+        const { refCode } = session.metadata ?? {};
+  if (refCode) {
+    try {
+      await trackReferral(refCode, order.user.email);
+    } catch {}
+  }
         console.log(`[webhook] ✅ Packaging order ${orderId} set to PAID`);
+        try {
+          await markOnboardingStep("firstOrder");
+        } catch {}
+        // Check if this is the user's first paid order
+        const paidOrderCount = await prisma.order.count({
+          where: {
+            userId: order.userId,
+            status: "PAID",
+            id: {
+              not: orderId, // exclude the current order
+            },
+          },
+        });
+
+        if (paidOrderCount === 0) {
+          console.log(
+            `[webhook] 🎉 First paid order for user ${order.userId}, qualifying referral`
+          );
+
+          await qualifyReferral(order.userId);
+        }
 
         await sendOrderConfirmationEmail({
           to: order.user.email,
@@ -64,12 +94,16 @@ export async function POST(req: Request) {
             priceCents: i.unitPriceCents,
           })),
           total: order.items.reduce(
-            (sum, i) => sum + i.unitPriceCents * i.quantity, 0
+            (sum, i) => sum + i.unitPriceCents * i.quantity,
+            0
           ),
           isEquipment: false,
         });
       } catch (err) {
-        console.error(`[webhook] ❌ Failed to update packaging order ${orderId}:`, err);
+        console.error(
+          `[webhook] ❌ Failed to update packaging order ${orderId}:`,
+          err
+        );
       }
     }
 
@@ -77,7 +111,6 @@ export async function POST(req: Request) {
     else if (paymentType === "deposit" && orderId) {
       console.log(`[webhook] Processing deposit for order: ${orderId}`);
       try {
-        // First check the order exists
         const existingOrder = await prisma.order.findUnique({
           where: { id: orderId },
           include: { items: true },
@@ -86,10 +119,13 @@ export async function POST(req: Request) {
         if (!existingOrder) {
           console.error(`[webhook] ❌ Order not found: ${orderId}`);
         } else {
-          console.log(`[webhook] Found order, current status: ${existingOrder.status}`);
-          console.log(`[webhook] Items count: ${existingOrder.items.length}`);
+          console.log(
+            `[webhook] Found order, current status: ${existingOrder.status}`
+          );
+          console.log(
+            `[webhook] Items count: ${existingOrder.items.length}`
+          );
 
-          // Update all items in this order
           const itemUpdate = await prisma.orderItem.updateMany({
             where: { orderId },
             data: {
@@ -98,9 +134,11 @@ export async function POST(req: Request) {
               stripeDepositPaymentIntentId: session.payment_intent ?? null,
             },
           });
-          console.log(`[webhook] ✅ Updated ${itemUpdate.count} order items to AWAITING_BALANCE`);
 
-          // Update the order itself
+          console.log(
+            `[webhook] ✅ Updated ${itemUpdate.count} order items to AWAITING_BALANCE`
+          );
+
           const updatedOrder = await prisma.order.update({
             where: { id: orderId },
             data: {
@@ -110,11 +148,15 @@ export async function POST(req: Request) {
             },
             include: { items: { include: { product: true } }, user: true },
           });
-          console.log(`[webhook] ✅ Order ${orderId} set to AWAITING_BALANCE`);
 
-          // Calculate deposit total for confirmation email
+          console.log(
+            `[webhook] ✅ Order ${orderId} set to AWAITING_BALANCE`
+          );
+
           const totalDeposit = updatedOrder.items.reduce((sum, i) => {
-            const d = Math.round((i.unitPriceCents * (i.depositPercent ?? 0)) / 100);
+            const d = Math.round(
+              (i.unitPriceCents * (i.depositPercent ?? 0)) / 100
+            );
             return sum + d * i.quantity;
           }, 0);
 
@@ -132,7 +174,10 @@ export async function POST(req: Request) {
           });
         }
       } catch (err) {
-        console.error(`[webhook] ❌ Failed to process deposit for order ${orderId}:`, err);
+        console.error(
+          `[webhook] ❌ Failed to process deposit for order ${orderId}:`,
+          err
+        );
       }
     }
 
@@ -148,9 +193,11 @@ export async function POST(req: Request) {
             stripeBalancePaymentIntentId: session.payment_intent ?? null,
           },
         });
-        console.log(`[webhook] ✅ Item ${orderItemId} set to IN_PRODUCTION`);
 
-        // Re-check all items in this order and sync order-level status
+        console.log(
+          `[webhook] ✅ Item ${orderItemId} set to IN_PRODUCTION`
+        );
+
         const allItems = await prisma.orderItem.findMany({
           where: { orderId: updatedItem.orderId },
         });
@@ -160,12 +207,18 @@ export async function POST(req: Request) {
           allItems.map((i) => i.itemStatus)
         );
 
-        const allDelivered = allItems.every((i) => i.itemStatus === "DELIVERED");
+        const allDelivered = allItems.every(
+          (i) => i.itemStatus === "DELIVERED"
+        );
+
         const allShipped = allItems.every((i) =>
           ["SHIPPED", "DELIVERED"].includes(i.itemStatus ?? "")
         );
+
         const allInProduction = allItems.every((i) =>
-          ["IN_PRODUCTION", "SHIPPED", "DELIVERED"].includes(i.itemStatus ?? "")
+          ["IN_PRODUCTION", "SHIPPED", "DELIVERED"].includes(
+            i.itemStatus ?? ""
+          )
         );
 
         const newOrderStatus = allDelivered
@@ -176,21 +229,30 @@ export async function POST(req: Request) {
           ? "IN_PRODUCTION"
           : "AWAITING_BALANCE";
 
-        console.log(`[webhook] Calculated new order status: ${newOrderStatus}`);
+        console.log(
+          `[webhook] Calculated new order status: ${newOrderStatus}`
+        );
 
         await prisma.order.update({
           where: { id: updatedItem.orderId },
           data: { status: newOrderStatus as any },
         });
-        console.log(`[webhook] ✅ Order ${updatedItem.orderId} set to ${newOrderStatus}`);
+
+        console.log(
+          `[webhook] ✅ Order ${updatedItem.orderId} set to ${newOrderStatus}`
+        );
       } catch (err) {
-        console.error(`[webhook] ❌ Failed to process balance for item ${orderItemId}:`, err);
+        console.error(
+          `[webhook] ❌ Failed to process balance for item ${orderItemId}:`,
+          err
+        );
       }
     }
 
     // ── 4. Subscription checkout ──────────────────────────────────────
     if (session.mode === "subscription" && session.subscription) {
       const { userId, productId, intervalDays } = session.metadata ?? {};
+
       if (userId && productId) {
         try {
           const sub = await prisma.subscription.upsert({
@@ -205,7 +267,10 @@ export async function POST(req: Request) {
             },
             include: { product: true, user: true },
           });
-          console.log(`[webhook] ✅ Subscription created for user ${userId}`);
+
+          console.log(
+            `[webhook] ✅ Subscription created for user ${userId}`
+          );
 
           await sendSubscriptionConfirmationEmail({
             to: sub.user.email,
@@ -215,7 +280,10 @@ export async function POST(req: Request) {
             priceCents: sub.product.priceCents,
           });
         } catch (err) {
-          console.error(`[webhook] ❌ Failed to create subscription:`, err);
+          console.error(
+            `[webhook] ❌ Failed to create subscription:`,
+            err
+          );
         }
       }
     }
@@ -224,21 +292,27 @@ export async function POST(req: Request) {
   // ── Subscription lifecycle events ──────────────────────────────────
   if (event.type === "customer.subscription.deleted") {
     const sub = event.data.object as any;
+
     await prisma.subscription.updateMany({
       where: { stripeSubscriptionId: sub.id },
       data: { status: "canceled" },
     });
+
     console.log(`[webhook] ✅ Subscription ${sub.id} canceled`);
   }
 
   if (event.type === "invoice.payment_failed") {
     const invoice = event.data.object as any;
+
     if (invoice.subscription) {
       await prisma.subscription.updateMany({
         where: { stripeSubscriptionId: invoice.subscription },
         data: { status: "past_due" },
       });
-      console.log(`[webhook] ✅ Subscription ${invoice.subscription} marked past_due`);
+
+      console.log(
+        `[webhook] ✅ Subscription ${invoice.subscription} marked past_due`
+      );
     }
   }
 

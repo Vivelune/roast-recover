@@ -40,7 +40,7 @@ export default async function AdminProductsPage() {
         <table className="w-full text-sm">
           <thead className="bg-steam/40 border-b border-border">
             <tr>
-              {["Name", "Category", "Price", "Deposit", "Certified", "Status", ""].map(
+              {["Name", "Category", "Price", "Stock","Deposit", "Certified", "Status", ""].map(
                 (h) => (
                   <th key={h} className="text-left px-4 py-3 text-xs font-medium text-ash">
                     {h}
@@ -57,6 +57,23 @@ export default async function AdminProductsPage() {
                 <td className="px-4 py-3 text-char">
                   ${(p.priceCents / 100).toFixed(2)}
                 </td>
+                <td className="px-4 py-3">
+  {p.stockQty !== null ? (
+    <span
+      className={`text-sm ${
+        p.stockQty === 0
+          ? "text-red-600 font-medium"
+          : p.stockQty <= (p.lowStockThreshold ?? 10)
+          ? "text-amber-600 font-medium"
+          : "text-char"
+      }`}
+    >
+      {p.stockQty}
+    </span>
+  ) : (
+    <span className="text-xs text-ash">∞</span>
+  )}
+</td>
                 <td className="px-4 py-3 text-ash text-xs">
                   {p.depositPercent ? `${p.depositPercent}%` : "—"}
                 </td>

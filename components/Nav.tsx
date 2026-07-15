@@ -22,13 +22,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import SignOutButton from "./SignOutButton";
+import SearchBar from "./SearchBar";
 
 const navLinks = [
   { href: "/equipment", label: "Equipment" },
   { href: "/packaging", label: "Packaging" },
   { href: "/why-roastandrecover", label: "Why us" },
   { href: "/how-it-works", label: "How it works" },
-  
   { href: "/contact", label: "Contact" },
 ];
 
@@ -97,6 +97,7 @@ export default function Nav() {
 
       <div className="flex items-center gap-1">
         {/* Packaging cart */}
+        <SearchBar/>
         <Link href="/cart">
           <Button
             variant="ghost"

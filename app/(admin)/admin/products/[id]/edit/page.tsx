@@ -38,13 +38,40 @@ export default async function EditProductPage({
       data: {
         name: formData.get("name") as string,
         description: formData.get("description") as string,
+        shortDesc: (formData.get("shortDesc") as string) || null,
+      
         priceCents,
+      
         depositPercent,
         leadTimeDays,
-        isSubscribable,
+      
         stripePriceId,
+      
+        isSubscribable,
+      
         images: imageUrl ? [imageUrl] : [],
-      },
+      
+        machineType: (formData.get("machineType") as string) || null,
+        packageSize: (formData.get("packageSize") as string) || null,
+        material: (formData.get("material") as string) || null,
+      
+        caseQty: formData.get("caseQty")
+          ? parseInt(formData.get("caseQty") as string)
+          : null,
+      
+        stockQty: formData.get("stockQty")
+          ? parseInt(formData.get("stockQty") as string)
+          : null,
+      
+        lowStockThreshold: formData.get("lowStockThreshold")
+          ? parseInt(formData.get("lowStockThreshold") as string)
+          : 10,
+      
+        tags: (formData.get("tags") as string)
+          ?.split(",")
+          .map((t) => t.trim())
+          .filter(Boolean) ?? [],
+      }
     });
 
     revalidatePath("/admin/products");
@@ -105,27 +132,158 @@ export default async function EditProductPage({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="depositPercent">Deposit %</Label>
-              <Input
-                id="depositPercent"
-                name="depositPercent"
-                type="number"
-                defaultValue={product.depositPercent ?? ""}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="leadTimeDays">Lead time (days)</Label>
-              <Input
-                id="leadTimeDays"
-                name="leadTimeDays"
-                type="number"
-                defaultValue={product.leadTimeDays ?? ""}
-              />
-            </div>
-          </div>
+          {product.category === "EQUIPMENT" && (
+  <div className="grid grid-cols-2 gap-4">
+    <div className="space-y-1.5">
+      <Label htmlFor="depositPercent">Deposit %</Label>
+      <Input
+        id="depositPercent"
+        name="depositPercent"
+        type="number"
+        defaultValue={product.depositPercent ?? ""}
+      />
+    </div>
 
+    <div className="space-y-1.5">
+      <Label htmlFor="leadTimeDays">Lead time (days)</Label>
+      <Input
+        id="leadTimeDays"
+        name="leadTimeDays"
+        type="number"
+        defaultValue={product.leadTimeDays ?? ""}
+      />
+    </div>
+  </div>
+)}
+
+{product.category === "EQUIPMENT" && (
+  <div className="space-y-5">
+
+    <div className="space-y-1.5">
+      <Label htmlFor="machineType">Machine type</Label>
+
+      <select
+        id="machineType"
+        name="machineType"
+        defaultValue={product.machineType ?? ""}
+        className="w-full border border-border rounded-md px-3 py-2.5 text-sm bg-white"
+      >
+        <option value="">Select type...</option>
+        <option value="espresso">Espresso machine</option>
+        <option value="grinder">Grinder</option>
+        <option value="batch-brew">Batch brew</option>
+        <option value="accessories">Accessories</option>
+      </select>
+    </div>
+
+    <div className="space-y-1.5">
+      <Label htmlFor="tags">Tags</Label>
+
+      <Input
+        id="tags"
+        name="tags"
+        defaultValue={product.tags?.join(", ") ?? ""}
+      />
+    </div>
+
+  </div>
+)}
+
+{product.category === "PACKAGING" && (
+  <>
+    <div className="grid grid-cols-3 gap-4">
+
+      <div className="space-y-1.5">
+        <Label htmlFor="packageSize">Cup size</Label>
+
+        <select
+          id="packageSize"
+          name="packageSize"
+          defaultValue={product.packageSize ?? ""}
+          className="w-full border border-border rounded-md px-3 py-2.5 text-sm bg-white"
+        >
+          <option value="">Any</option>
+          <option value="4oz">4oz</option>
+          <option value="8oz">8oz</option>
+          <option value="12oz">12oz</option>
+          <option value="16oz">16oz</option>
+          <option value="20oz">20oz</option>
+          <option value="24oz">24oz</option>
+        </select>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="material">Material</Label>
+
+        <select
+          id="material"
+          name="material"
+          defaultValue={product.material ?? ""}
+          className="w-full border border-border rounded-md px-3 py-2.5 text-sm bg-white"
+        >
+          <option value="">Any</option>
+          <option value="paper">Paper</option>
+          <option value="compostable">Compostable</option>
+          <option value="plastic">Plastic</option>
+          <option value="PLA">PLA</option>
+        </select>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="caseQty">Case qty</Label>
+
+        <Input
+          id="caseQty"
+          name="caseQty"
+          type="number"
+          defaultValue={product.caseQty ?? ""}
+        />
+      </div>
+
+    </div>
+
+    <div className="grid grid-cols-2 gap-4 mt-4">
+
+      <div className="space-y-1.5">
+        <Label htmlFor="stockQty">Stock quantity</Label>
+
+        <Input
+          id="stockQty"
+          name="stockQty"
+          type="number"
+          defaultValue={product.stockQty ?? ""}
+        />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="lowStockThreshold">
+          Low stock threshold
+        </Label>
+
+        <Input
+          id="lowStockThreshold"
+          name="lowStockThreshold"
+          type="number"
+          defaultValue={product.lowStockThreshold ?? 10}
+        />
+      </div>
+
+    </div>
+  </>
+)}
+
+
+<div className="space-y-1.5">
+  <Label htmlFor="shortDesc">
+    Short description
+  </Label>
+
+  <Input
+    id="shortDesc"
+    name="shortDesc"
+    defaultValue={product.shortDesc ?? ""}
+  />
+</div>
           <div className="space-y-1.5">
             <Label htmlFor="stripePriceId">Stripe Price ID</Label>
             <Input

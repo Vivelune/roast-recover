@@ -7,6 +7,7 @@ import { useEquipmentCart } from "@/lib/equipment-cart-store";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import VolumeOrderCTA from "@/components/VolumeOrderCTA";
 
 export default function EquipmentCartPage() {
   const { items, removeItem, updateQuantity } = useEquipmentCart();
@@ -153,6 +154,7 @@ export default function EquipmentCartPage() {
           Continue to checkout <ArrowRight size={15} />
         </Link>
       </Button>
+      <VolumeOrderCTA items={items} /> 
 
       <p className="text-center text-xs text-ash mt-3">
         Packaging order?{" "}

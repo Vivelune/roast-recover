@@ -6,6 +6,7 @@ import { createAddress, deleteAddress } from "@/app/actions/addresses";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { Label } from "./ui/label";
 
 type Address = {
   id: string;
@@ -24,7 +25,7 @@ export default function AddressesClient({
   const router = useRouter();
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
-    line1: "", line2: "", city: "", state: "", zip: "",
+    line1: "", line2: "", city: "", state: "", zip: "" ,country: "US",
   });
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
@@ -34,7 +35,7 @@ export default function AddressesClient({
     setSaving(true);
     try {
       await createAddress(form);
-      setForm({ line1: "", line2: "", city: "", state: "", zip: "" });
+      setForm({ line1: "", line2: "", city: "", state: "", zip: "", country: "US", });
       setShowForm(false);
       router.refresh();
     } finally {
@@ -88,14 +89,38 @@ export default function AddressesClient({
               value={form.line2}
               onChange={(e) => setForm({ ...form, line2: e.target.value })}
             />
-            <div className="grid grid-cols-3 gap-3">
-              <Input required placeholder="City" value={form.city}
-                onChange={(e) => setForm({ ...form, city: e.target.value })} />
-              <Input required placeholder="State" value={form.state}
-                onChange={(e) => setForm({ ...form, state: e.target.value })} />
-              <Input required placeholder="ZIP" value={form.zip}
-                onChange={(e) => setForm({ ...form, zip: e.target.value })} />
-            </div>
+           <div className="grid grid-cols-3 gap-3">
+  <Input required placeholder="City" value={form.city}
+    onChange={(e) => setForm({ ...form, city: e.target.value })} />
+  <Input required placeholder="State / Province" value={form.state}
+    onChange={(e) => setForm({ ...form, state: e.target.value })} />
+  <Input required placeholder="ZIP / Postal code" value={form.zip}
+    onChange={(e) => setForm({ ...form, zip: e.target.value })} />
+</div>
+
+{/* Country — default US, allow change */}
+<div className="space-y-1.5">
+  <Label htmlFor="country">Country</Label>
+  <select
+    id="country"
+    value={form.country}
+    onChange={(e) => setForm({ ...form, country: e.target.value })}
+    className="w-full border border-border rounded-md px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-ember"
+  >
+    <option value="US">United States</option>
+    <option value="GB">United Kingdom</option>
+    <option value="CA">Canada</option>
+    <option value="AU">Australia</option>
+    <option value="SG">Singapore</option>
+    <option value="AE">United Arab Emirates</option>
+    <option value="PH">Philippines</option>
+    <option value="ID">Indonesia</option>
+    <option value="VN">Vietnam</option>
+    <option value="TH">Thailand</option>
+    <option value="MY">Malaysia</option>
+    <option value="OTHER">Other</option>
+  </select>
+</div>
             <div className="flex gap-3 pt-1">
               <Button type="submit" disabled={saving}>
                 {saving ? "Saving..." : "Save address"}

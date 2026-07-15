@@ -24,6 +24,7 @@ type Address = {
   city: string;
   state: string;
   zip: string;
+  country: string;
 };
 
 export default function CheckoutClient({
@@ -37,7 +38,9 @@ export default function CheckoutClient({
   const [showForm, setShowForm] = useState(addresses.length === 0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const [refCode, setRefCode] = useState(
+    typeof window !== "undefined" ? localStorage.getItem("rr_ref") ?? "" : ""
+  );
   const total = items.reduce(
     (sum, i) => sum + i.priceCents * i.quantity,
     0
@@ -49,9 +52,14 @@ export default function CheckoutClient({
     setError(null);
     setLoading(true);
     try {
+      const refCode = typeof window !== "undefined"
+      ? localStorage.getItem("rr_ref") ?? undefined
+      : undefined;
+
       const { checkoutUrl } = await createCheckoutSession(
         items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
-        selectedId
+        selectedId,
+        refCode || undefined
       );
       if (checkoutUrl) window.location.href = checkoutUrl;
       else throw new Error("No checkout URL returned");
@@ -137,6 +145,7 @@ export default function CheckoutClient({
                       {addr.city}, {addr.state} {addr.zip}
                     </span>
                   </label>
+                  
                 ))}
               </RadioGroup>
               <button
@@ -160,7 +169,37 @@ export default function CheckoutClient({
               }
             />
           )}
-
+          <div className="mt-5 pt-5 border-t border-border">
+  <p className="text-xs font-medium text-char mb-2">
+    Referral code{" "}
+    <span className="text-ash font-normal">(optional)</span>
+  </p>
+  <div className="flex gap-2">
+    <Input
+      placeholder="Enter code e.g. MARCUS20"
+      value={refCode}
+      onChange={(e) => setRefCode(e.target.value.toUpperCase())}
+      className="font-mono text-sm"
+    />
+    {refCode && (
+      <button
+        type="button"
+        onClick={() => {
+          setRefCode("");
+          localStorage.removeItem("rr_ref");
+        }}
+        className="text-xs text-ash hover:text-red-500 transition-colors flex-shrink-0"
+      >
+        Clear
+      </button>
+    )}
+  </div>
+  {refCode && (
+    <p className="text-xs text-green-700 mt-1">
+      ✓ Referral code applied
+    </p>
+  )}
+</div>
           {error && (
             <div className="flex items-center gap-2 text-sm text-red-700 bg-red-50 border border-red-100 rounded-md px-4 py-3 mt-5">
               <AlertCircle size={14} /> {error}

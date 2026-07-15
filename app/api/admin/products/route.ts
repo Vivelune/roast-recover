@@ -33,6 +33,13 @@ export async function POST(req: Request) {
       isSubscribable: isSubscribable ?? false,
       images: images ?? [],
       active: true,
+      machineType: body.machineType || null,
+    packageSize: body.packageSize || null,
+    material: body.material || null,
+    caseQty: body.caseQty ? parseInt(body.caseQty) : null,
+    tags: body.tags ? body.tags.split(",").map((t: string) => t.trim()).filter(Boolean) : [],
+    stockQty: body.stockQty ? parseInt(body.stockQty) : null,
+lowStockThreshold: body.lowStockThreshold ? parseInt(body.lowStockThreshold) : 10,
     },
   });
 

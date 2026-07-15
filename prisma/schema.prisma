@@ -27,13 +27,18 @@ model User {
 
   company Company? @relation(fields: [companyId], references: [id])
   companyId String?
-
+  referralCode      ReferralCode?
+  storeCredits      StoreCredit[]
+  onboardingProgress OnboardingProgress?
   addresses Address[]
 
   orders Order[]
    reviews   Review[]
   subscriptions Subscription[]
   equipmentItems EquipmentRegistryItem[]
+  companyMemberships CompanyMember[] // ← add
+  serviceTickets     ServiceTicket[] // ← add
+  invoices           Invoice[] 
 
   createdAt DateTime @default(now())
 }
@@ -46,6 +51,7 @@ model Company {
   id        String   @id @default(cuid())
   name      String
   users     User[]
+  members CompanyMember[]
   addresses Address[]
   createdAt DateTime @default(now())
 }
@@ -78,6 +84,14 @@ model Product {
   priceCents      Int
   depositPercent  Int?
   leadTimeDays    Int?
+  machineType   String?   // "espresso" | "grinder" | "batch-brew" | "accessories"
+  packageSize   String?   // "4oz" | "8oz" | "12oz" | "16oz" | "20oz" | "24oz"
+  material      String?   // "paper" | "compostable" | "plastic" | "PLA"
+  caseQty       Int?      // units per case
+  tags          String[]  // flexible search tags
+  shortDesc     String?   // one-liner for search results
+  stockQty      Int?     // null = unlimited/not tracked, 0 = out of stock
+  lowStockThreshold Int? @default(10)
   reviews   Review[]
 
   certification   Certification? @relation(fields: [certificationId], references: [id])
@@ -124,7 +138,7 @@ model Order {
   status          OrderStatus  @default(PENDING_DEPOSIT)
 
   items           OrderItem[]
-
+  invoice Invoice? // ← add
   depositPaidAt   DateTime?
   balancePaidAt   DateTime?
 
@@ -214,10 +228,13 @@ model EquipmentRegistryItem {
 
   order         Order?   @relation(fields: [orderId], references: [id])
   orderId       String?
-  
+  serviceLogs    ServiceLog[]    // ← add
+  serviceTickets ServiceTicket[] // ← add
 
   installedAt   DateTime?
   warrantyEndsAt DateTime?
+  customName    String?   // stores declared name when not purchased from R&R
+  customBrand   String?   // stores declared brand
 }
 
 model ProductionBatch {
@@ -289,4 +306,112 @@ model Testimonial {
   active      Boolean  @default(true)
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
+}
+
+enum CompanyRole {
+  OWNER
+  MANAGER
+  VIEWER
+}
+
+model CompanyMember {
+  id        String      @id @default(cuid())
+  company   Company     @relation(fields: [companyId], references: [id])
+  companyId String
+  user      User        @relation(fields: [userId], references: [id])
+  userId    String
+  role      CompanyRole @default(MANAGER)
+  location  String?     // which physical location this person manages
+  createdAt DateTime    @default(now())
+
+  @@unique([companyId, userId])
+}
+
+model ServiceLog {
+  id            String                @id @default(cuid())
+  equipment     EquipmentRegistryItem @relation(fields: [equipmentId], references: [id])
+  equipmentId   String
+  servicedAt    DateTime
+  servicedBy    String                // technician name or company
+  description   String                // what was done
+  cost          Int?                  // in cents, optional
+  nextServiceDue DateTime?
+  createdAt     DateTime              @default(now())
+}
+
+model ServiceTicket {
+  id          String   @id @default(cuid())
+  equipment   EquipmentRegistryItem @relation(fields: [equipmentId], references: [id])
+  equipmentId String
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  issue       String
+  status      String   @default("open") // open | in_progress | resolved | closed
+  notes       String?  // admin notes
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Invoice {
+  id          String   @id @default(cuid())
+  order       Order    @relation(fields: [orderId], references: [id])
+  orderId     String   @unique
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  pdfUrl      String?  // Uploadthing URL once generated
+  invoiceNum  String   @unique // RR-2026-0001
+  status      String   @default("draft") // draft | issued | paid
+  issuedAt    DateTime @default(now())
+  totalCents  Int
+  createdAt   DateTime @default(now())
+}
+
+// 4.1 — Referral program
+model ReferralCode {
+  id          String     @id @default(cuid())
+  code        String     @unique  // e.g. "MARCUS20"
+  user        User       @relation(fields: [userId], references: [id])
+  userId      String     @unique  // one code per user
+  referrals   Referral[]
+  createdAt   DateTime   @default(now())
+}
+
+model Referral {
+  id            String       @id @default(cuid())
+  code          ReferralCode @relation(fields: [codeId], references: [id])
+  codeId        String
+  referrerId    String       // user who owns the code
+  refereeId     String       // user who signed up using the code
+  refereeEmail  String
+  status        String       @default("pending")
+  // pending → qualified (referee places first order) → credited (credit issued)
+  creditIssuedAt DateTime?
+  createdAt     DateTime     @default(now())
+
+  @@unique([codeId, refereeId])
+}
+
+model StoreCredit {
+  id          String   @id @default(cuid())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  amountCents Int      // credit amount
+  reason      String   // "Referral: Marcus Chen", "Goodwill", etc.
+  usedAt      DateTime?
+  orderId     String?  // which order it was applied to
+  createdAt   DateTime @default(now())
+}
+
+// 4.2 — Onboarding
+model OnboardingProgress {
+  id                    String   @id @default(cuid())
+  user                  User     @relation(fields: [userId], references: [id])
+  userId                String   @unique
+  addressAdded          Boolean  @default(false)
+  equipmentDeclared     Boolean  @default(false)
+  firstPackagingBrowse  Boolean  @default(false)
+  firstOrder            Boolean  @default(false)
+  profileComplete       Boolean  @default(false)
+  completedAt           DateTime?
+  createdAt             DateTime @default(now())
 }

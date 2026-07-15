@@ -4,12 +4,16 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight, Package, ClipboardList, RefreshCw } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { getReorderInsights } from "@/lib/reorder";
+import ReorderWidget from "@/components/ReorderWidget";
+import { getOrCreateOnboarding } from "@/app/actions/onboarding";
+import OnboardingChecklist from "@/components/OnboardingChecklist";
 
 export default async function AccountPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/sign-in");
 
-  const [orders, equipment, subscriptions] = await Promise.all([
+  const [orders, equipment, subscriptions, reorderInsights, onboarding] = await Promise.all([
     prisma.order.findMany({
       where: {
         userId: user.id,
@@ -39,6 +43,8 @@ export default async function AccountPage() {
       where: { userId: user.id, status: "active" },
       include: { product: true },
     }),
+    getReorderInsights(user.id),
+    getOrCreateOnboarding(),
   ]);
 
   const stats = [
@@ -46,9 +52,13 @@ export default async function AccountPage() {
     { label: "Equipment owned", value: equipment.length, icon: Package, href: "/account/equipment" },
     { label: "Active subscriptions", value: subscriptions.length, icon: RefreshCw, href: "/account/subscriptions" },
   ];
+  const defaultAddress = user.addresses?.[0] ?? null;
 
   return (
     <div>
+      {!onboarding.completedAt && (
+      <OnboardingChecklist progress={onboarding} />
+    )}
       <h1 className="font-display font-semibold text-2xl text-char mb-1">
         Welcome back
         {user.name ? `, ${user.name.split(" ")[0]}` : ""}
@@ -72,6 +82,12 @@ export default async function AccountPage() {
           </Link>
         ))}
       </div>
+
+
+      <ReorderWidget
+  insights={reorderInsights}
+  defaultAddressId={defaultAddress?.id ?? null}
+/>
 
       {/* Recent orders */}
       <div>

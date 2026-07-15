@@ -18,6 +18,7 @@ export default async function AdminOverviewPage() {
     actionRequiredOrders,
     expiringCerts,
     recentOrders,
+    lowStockProducts,
   ] = await Promise.all([
     prisma.order.findMany({
       where: {
@@ -43,6 +44,18 @@ export default async function AdminOverviewPage() {
       orderBy: { createdAt: "desc" },
       take: 5,
       include: { items: { include: { product: true } }, user: true },
+    }),
+    prisma.product.findMany({
+      where: {
+        category: "PACKAGING",
+        active: true,
+        stockQty: {
+          not: null,
+        },
+      },
+      orderBy: {
+        stockQty: "asc",
+      },
     }),
   ]);
 
@@ -81,6 +94,11 @@ export default async function AdminOverviewPage() {
   }
 
   const totalRevenue = calcRevenue(revenueOrders);
+  const filteredLowStockProducts = lowStockProducts.filter(
+    (p) =>
+      p.stockQty !== null &&
+      p.stockQty <= (p.lowStockThreshold ?? 10)
+  );
 
   // Last 14 days for chart
   const days = Array.from({ length: 14 }, (_, i) => {
@@ -180,6 +198,50 @@ export default async function AdminOverviewPage() {
         </div>
         <RevenueChart data={revenueByDay} />
       </Card>
+
+      {/* Low stock alerts */}
+{filteredLowStockProducts.length > 0 && (
+  <Card className="p-5 mb-8 border-amber-300 bg-amber-50/20">
+    <div className="flex items-center justify-between mb-3">
+  <p className="text-sm font-medium text-char flex items-center gap-2">
+    <AlertTriangle size={15} className="text-amber-500" />
+    Stock alerts
+  </p>
+
+  <Link
+    href="/admin/products"
+    className="text-xs text-ember hover:underline"
+  >
+    Manage inventory →
+  </Link>
+</div>
+
+    <div className="space-y-2">
+      {filteredLowStockProducts.map((p) => (
+        <div
+          key={p.id}
+          className="flex items-center justify-between text-sm"
+        >
+          <span className="text-char">
+            {p.name}
+          </span>
+
+          <span
+            className={`font-medium ${
+              p.stockQty === 0
+                ? "text-red-600"
+                : "text-amber-600"
+            }`}
+          >
+            {p.stockQty === 0
+              ? "Out of stock"
+              : `${p.stockQty} remaining`}
+          </span>
+        </div>
+      ))}
+    </div>
+  </Card>
+)}
 
       {/* Recent orders */}
       <Card className="p-5">
