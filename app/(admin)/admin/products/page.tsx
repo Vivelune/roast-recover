@@ -1,10 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Plus, Pencil } from "lucide-react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
+import DeleteProductButton from "@/components/DeleteProductButton";
 
 export default async function AdminProductsPage() {
   const products = await prisma.product.findMany({
@@ -23,13 +25,42 @@ export default async function AdminProductsPage() {
     revalidatePath("/admin/products");
   }
 
+  async function deleteProduct(formData: FormData) {
+    "use server";
+    const id = formData.get("id") as string;
+
+    // Check no active orders reference this product
+    const activeOrders = await prisma.orderItem.count({
+      where: {
+        productId: id,
+        order: {
+          status: {
+            notIn: ["DELIVERED", "CANCELLED", "PAID"],
+          },
+        },
+      },
+    });
+
+    if (activeOrders > 0) {
+      // Can't delete — has active orders. Just hide it instead.
+      await prisma.product.update({
+        where: { id },
+        data: { active: false },
+      });
+    } else {
+      await prisma.product.delete({ where: { id } });
+    }
+
+    revalidatePath("/admin/products");
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
         <h1 className="font-display font-semibold text-2xl text-char">
           Products
         </h1>
-        <Button asChild className="bg-ember text-white hover:bg-ember-dark">
+        <Button asChild className="bg-ember hover:bg-ember-dark">
           <Link href="/admin/products/new">
             <Plus size={15} className="mr-1.5" /> New product
           </Link>
@@ -40,9 +71,12 @@ export default async function AdminProductsPage() {
         <table className="w-full text-sm">
           <thead className="bg-steam/40 border-b border-border">
             <tr>
-              {["Name", "Category", "Price", "Stock","Deposit", "Certified", "Status", ""].map(
+              {["Name", "Category", "Price", "Deposit", "Stock", "Certified", "Status", ""].map(
                 (h) => (
-                  <th key={h} className="text-left px-4 py-3 text-xs font-medium text-ash">
+                  <th
+                    key={h}
+                    className="text-left px-4 py-3 text-xs font-medium text-ash"
+                  >
                     {h}
                   </th>
                 )
@@ -51,31 +85,36 @@ export default async function AdminProductsPage() {
           </thead>
           <tbody>
             {products.map((p) => (
-              <tr key={p.id} className="border-b border-border/50 last:border-0 hover:bg-steam/20">
-                <td className="px-4 py-3 font-medium text-char">{p.name}</td>
+              <tr
+                key={p.id}
+                className="border-b border-border/50 last:border-0 hover:bg-steam/20"
+              >
+                <td className="px-4 py-3 font-medium text-char max-w-[180px] truncate">
+                  {p.name}
+                </td>
                 <td className="px-4 py-3 text-ash text-xs">{p.category}</td>
                 <td className="px-4 py-3 text-char">
                   ${(p.priceCents / 100).toFixed(2)}
                 </td>
-                <td className="px-4 py-3">
-  {p.stockQty !== null ? (
-    <span
-      className={`text-sm ${
-        p.stockQty === 0
-          ? "text-red-600 font-medium"
-          : p.stockQty <= (p.lowStockThreshold ?? 10)
-          ? "text-amber-600 font-medium"
-          : "text-char"
-      }`}
-    >
-      {p.stockQty}
-    </span>
-  ) : (
-    <span className="text-xs text-ash">∞</span>
-  )}
-</td>
                 <td className="px-4 py-3 text-ash text-xs">
                   {p.depositPercent ? `${p.depositPercent}%` : "—"}
+                </td>
+                <td className="px-4 py-3">
+                  {p.stockQty !== null ? (
+                    <span
+                      className={`text-sm ${
+                        p.stockQty === 0
+                          ? "text-red-600 font-medium"
+                          : p.stockQty <= (p.lowStockThreshold ?? 10)
+                          ? "text-amber-600 font-medium"
+                          : "text-char"
+                      }`}
+                    >
+                      {p.stockQty}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-ash">∞</span>
+                  )}
                 </td>
                 <td className="px-4 py-3">
                   {p.certification ? (
@@ -93,22 +132,35 @@ export default async function AdminProductsPage() {
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
+                    {/* Edit */}
                     <Link
                       href={`/admin/products/${p.id}/edit`}
                       className="text-ash hover:text-char transition-colors"
                     >
                       <Pencil size={13} />
                     </Link>
+
+                    {/* Toggle active */}
                     <form action={toggleActive}>
                       <input type="hidden" name="id" value={p.id} />
-                      <input type="hidden" name="active" value={String(p.active)} />
+                      <input
+                        type="hidden"
+                        name="active"
+                        value={String(p.active)}
+                      />
                       <button
                         type="submit"
                         className="text-xs text-ash hover:text-ember transition-colors"
                       >
-                        {p.active ? "Hide" : "Activate"}
+                        {p.active ? "Hide" : "Show"}
                       </button>
                     </form>
+
+                    {/* Delete */}
+                    <form action={deleteProduct}>
+  <input type="hidden" name="id" value={p.id} />
+  <DeleteProductButton productName={p.name} />
+</form>
                   </div>
                 </td>
               </tr>

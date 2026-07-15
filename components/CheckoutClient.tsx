@@ -16,6 +16,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import CheckoutSteps from "./CheckoutSteps";
 import { createAddress } from "@/app/actions/addresses";
 import { createCheckoutSession } from "@/app/actions/checkout";
+import { Label } from "./ui/label";
+
 
 type Address = {
   id: string;
@@ -143,6 +145,8 @@ export default function CheckoutClient({
                       {addr.line2 ? `, ${addr.line2}` : ""}
                       <br />
                       {addr.city}, {addr.state} {addr.zip}
+                      <br/>
+                      {addr.country}
                     </span>
                   </label>
                   
@@ -276,6 +280,7 @@ function AddressForm({
     city: "",
     state: "",
     zip: "",
+    country: "",
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -327,7 +332,26 @@ function AddressForm({
             value={form.zip}
             onChange={(e) => setForm({ ...form, zip: e.target.value })}
           />
+
         </div>
+        <div className="space-y-1.5">
+  <Label htmlFor="country">Country</Label>
+  <Input
+    id="country"
+    placeholder="e.g. United States, UAE, UK"
+    value={form.country}
+    onChange={(e) =>
+      setForm({
+        ...form,
+        country: e.target.value,
+      })
+    }
+  />
+  <p className="text-xs text-ash">
+    Leave blank to default to United States.
+  </p>
+</div>
+        
         {error && (
           <div className="flex items-center gap-2 text-sm text-red-700 bg-red-50 border border-red-100 rounded-md px-3 py-2.5">
             <AlertCircle size={13} /> {error}

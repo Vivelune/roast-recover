@@ -3,10 +3,10 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
-  ShieldCheck, Calendar, Wrench, AlertTriangle, CheckCircle2,
+  ShieldCheck, Calendar, Wrench, AlertTriangle,
+  CheckCircle2,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import ServiceTicketForm from "@/components/ServiceTicketForm";
@@ -35,9 +35,10 @@ export default async function EquipmentPage() {
         <h1 className="font-display font-semibold text-2xl text-char">
           Equipment
         </h1>
+        {/* No declare button here — only in onboarding */}
       </div>
       <p className="text-ash text-sm mb-8">
-        Machines ordered through Roast & Recover, with service history and warranty tracking.
+        All machines in your registry — purchased through us or declared manually.
       </p>
 
       {equipment.length === 0 ? (
@@ -47,7 +48,8 @@ export default async function EquipmentPage() {
           </div>
           <p className="text-char font-medium mb-1">No equipment yet</p>
           <p className="text-ash text-sm mb-5">
-            Equipment appears here once your order is delivered.
+            Equipment ordered from us appears here automatically. You can also
+            add existing machines during onboarding.
           </p>
           <Button asChild className="bg-ember hover:bg-ember-dark">
             <Link href="/equipment">Browse equipment</Link>
@@ -56,14 +58,17 @@ export default async function EquipmentPage() {
       ) : (
         <div className="space-y-6">
           {equipment.map((item) => {
+            // Use custom name if declared externally, otherwise use product name
+            const displayName = item.customName ?? item.product.name;
+            const displayBrand = item.customBrand;
+            const isPurchasedFromRR = !item.customName && item.orderId;
+
             const warrantyExpiringSoon =
               item.warrantyEndsAt &&
               item.warrantyEndsAt > now &&
               item.warrantyEndsAt < thirtyDaysFromNow;
-
             const warrantyExpired =
               item.warrantyEndsAt && item.warrantyEndsAt < now;
-
             const lastService = item.serviceLogs[0];
             const nextServiceDue = lastService?.nextServiceDue;
             const serviceOverdue = nextServiceDue && nextServiceDue < now;
@@ -71,28 +76,36 @@ export default async function EquipmentPage() {
               nextServiceDue &&
               nextServiceDue > now &&
               nextServiceDue < thirtyDaysFromNow;
-
             const openTicket = item.serviceTickets.find(
               (t) => t.status === "open" || t.status === "in_progress"
             );
 
             return (
               <Card key={item.id} className="p-5">
-                {/* Header */}
                 <div className="flex items-start justify-between gap-4 mb-4">
                   <div>
-                    <h2 className="font-medium text-char mb-1">
-                      {item.product.name}
-                    </h2>
-                    <div className="flex flex-wrap items-center gap-2">
-                      {item.product.certification && (
-                        <span className="flex items-center gap-1 text-xs text-ash">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h2 className="font-medium text-char">{displayName}</h2>
+                      {!isPurchasedFromRR && (
+                        <span className="text-xs bg-steam text-ash px-2 py-0.5 rounded-full">
+                          External
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-ash">
+                      {displayBrand && (
+                        <span className="font-medium text-char">
+                          {displayBrand}
+                        </span>
+                      )}
+                      {item.product.certification && !item.customName && (
+                        <span className="flex items-center gap-1">
                           <ShieldCheck size={11} className="text-ember" />
                           {item.product.certification.type} #{item.product.certification.listingNumber}
                         </span>
                       )}
                       {item.installedAt && (
-                        <span className="flex items-center gap-1 text-xs text-ash">
+                        <span className="flex items-center gap-1">
                           <Calendar size={11} />
                           Installed {new Date(item.installedAt).toLocaleDateString()}
                         </span>
@@ -109,9 +122,8 @@ export default async function EquipmentPage() {
                   )}
                 </div>
 
-                {/* Status alerts */}
+                {/* Warranty and service alerts */}
                 <div className="space-y-2 mb-4">
-                  {/* Warranty */}
                   {warrantyExpired ? (
                     <div className="flex items-center gap-2 text-xs text-red-700 bg-red-50 border border-red-100 rounded-md px-3 py-2">
                       <AlertTriangle size={12} />
@@ -121,7 +133,7 @@ export default async function EquipmentPage() {
                   ) : warrantyExpiringSoon ? (
                     <div className="flex items-center gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
                       <AlertTriangle size={12} />
-                      Warranty expires soon —{" "}
+                      Warranty expires{" "}
                       {new Date(item.warrantyEndsAt!).toLocaleDateString()}
                     </div>
                   ) : item.warrantyEndsAt ? (
@@ -132,7 +144,6 @@ export default async function EquipmentPage() {
                     </div>
                   ) : null}
 
-                  {/* Service due */}
                   {serviceOverdue && (
                     <div className="flex items-center gap-2 text-xs text-red-700 bg-red-50 border border-red-100 rounded-md px-3 py-2">
                       <AlertTriangle size={12} />
@@ -168,10 +179,10 @@ export default async function EquipmentPage() {
                           <div>
                             <p className="text-char">{log.description}</p>
                             <p className="text-xs text-ash">
-                              {new Date(log.servicedAt).toLocaleDateString()}{" "}
-                              · {log.servicedBy}
+                              {new Date(log.servicedAt).toLocaleDateString()} ·{" "}
+                              {log.servicedBy}
                               {log.nextServiceDue &&
-                                ` · Next due: ${new Date(log.nextServiceDue).toLocaleDateString()}`}
+                                ` · Next: ${new Date(log.nextServiceDue).toLocaleDateString()}`}
                             </p>
                           </div>
                           {log.cost && (
@@ -185,21 +196,14 @@ export default async function EquipmentPage() {
                   )}
                 </div>
 
-                {/* Open ticket */}
-                {openTicket && (
-                  <div className="bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 mb-4">
+                {openTicket ? (
+                  <div className="bg-blue-50 border border-blue-100 rounded-lg px-4 py-3">
                     <p className="text-xs font-medium text-blue-800 mb-0.5">
                       Service ticket open
                     </p>
                     <p className="text-xs text-blue-700">{openTicket.issue}</p>
-                    <Badge className="mt-1.5 text-[10px] bg-blue-100 text-blue-700 border-blue-200">
-                      {openTicket.status.replace("_", " ")}
-                    </Badge>
                   </div>
-                )}
-
-                {/* Book service */}
-                {!openTicket && (
+                ) : (
                   <ServiceTicketForm equipmentId={item.id} />
                 )}
               </Card>

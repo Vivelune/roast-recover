@@ -60,14 +60,12 @@ export async function declareExistingEquipment(
   const user = await getCurrentUser();
   if (!user) throw new Error("Not signed in");
 
-  // Get any active equipment product to use as placeholder
   const fallbackProduct = await prisma.product.findFirst({
     where: { category: "EQUIPMENT", active: true },
     orderBy: { createdAt: "asc" },
   });
 
   if (!fallbackProduct) {
-    // No equipment products exist yet — just mark step done
     await markOnboardingStep("equipmentDeclared");
     return;
   }
@@ -75,7 +73,6 @@ export async function declareExistingEquipment(
   for (const item of items) {
     if (!item.name.trim()) continue;
 
-    // Try exact match first
     const exactMatch = await prisma.product.findFirst({
       where: {
         category: "EQUIPMENT",
@@ -91,16 +88,10 @@ export async function declareExistingEquipment(
 
     const productToUse = exactMatch ?? fallbackProduct;
 
-    // Check not already registered
     const existing = await prisma.equipmentRegistryItem.findFirst({
       where: {
         userId: user.id,
-        productId: productToUse.id,
-        orderId: null,
-        // Distinguish by install date to allow multiple of same type
-        installedAt: item.installYear
-          ? new Date(`${item.installYear}-01-01`)
-          : null,
+        customName: item.name.trim(),   // ← check by custom name, not product
       },
     });
 
@@ -109,6 +100,8 @@ export async function declareExistingEquipment(
         data: {
           userId: user.id,
           productId: productToUse.id,
+          customName: item.name.trim(),          // ← store what they typed
+          customBrand: item.brand?.trim() || null,
           installedAt: item.installYear
             ? new Date(`${item.installYear}-01-01`)
             : null,
