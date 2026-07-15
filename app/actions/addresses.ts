@@ -16,7 +16,7 @@ export async function createAddress(data: {
   if (!user) throw new Error("Not signed in");
 
   const address = await prisma.address.create({
-    data: { ...data, userId: user.id, country: data.country ?? "US", },
+    data: { ...data, userId: user.id, country: data.country?.trim() || "United States",},
   });
   try {
     await markOnboardingStep("addressAdded");

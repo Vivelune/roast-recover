@@ -31,7 +31,8 @@ model User {
   storeCredits      StoreCredit[]
   onboardingProgress OnboardingProgress?
   addresses Address[]
-
+  notifications  Notification[]
+  activityFeed   ActivityEntry[]
   orders Order[]
    reviews   Review[]
   subscriptions Subscription[]
@@ -414,4 +415,48 @@ model OnboardingProgress {
   profileComplete       Boolean  @default(false)
   completedAt           DateTime?
   createdAt             DateTime @default(now())
+}
+
+// 5.1 — Notifications
+model Notification {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  type      String   // "order_status" | "balance_due" | "service_ticket" | "referral_credit" | "review_request"
+  title     String
+  body      String
+  href      String?  // where to go when clicked
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+// 5.2 — Activity feed entries (separate from notifications — these are permanent records)
+model ActivityEntry {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  type      String   // "order_placed" | "order_shipped" | "deposit_paid" | "balance_paid" | "sub_renewed" | "review_left"
+  title     String
+  metadata  Json?    // { orderId, productName, amount, etc. }
+  createdAt DateTime @default(now())
+}
+
+// 5.3 — Blog
+model BlogPost {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  excerpt     String
+  content     String   // markdown
+  coverUrl    String?
+  category    String   // "guide" | "news" | "comparison"
+  tags        String[]
+  published   Boolean  @default(false)
+  publishedAt DateTime?
+  readingMins Int      @default(5)
+  authorName  String   @default("Roast & Recover")
+  seoTitle    String?
+  seoDesc     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

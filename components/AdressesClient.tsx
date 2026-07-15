@@ -15,6 +15,7 @@ type Address = {
   city: string;
   state: string;
   zip: string;
+  country: string;
 };
 
 export default function AddressesClient({
@@ -98,28 +99,18 @@ export default function AddressesClient({
     onChange={(e) => setForm({ ...form, zip: e.target.value })} />
 </div>
 
-{/* Country — default US, allow change */}
+
 <div className="space-y-1.5">
   <Label htmlFor="country">Country</Label>
-  <select
+  <Input
     id="country"
+    placeholder="e.g. United States, UAE, UK"
     value={form.country}
     onChange={(e) => setForm({ ...form, country: e.target.value })}
-    className="w-full border border-border rounded-md px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-ember"
-  >
-    <option value="US">United States</option>
-    <option value="GB">United Kingdom</option>
-    <option value="CA">Canada</option>
-    <option value="AU">Australia</option>
-    <option value="SG">Singapore</option>
-    <option value="AE">United Arab Emirates</option>
-    <option value="PH">Philippines</option>
-    <option value="ID">Indonesia</option>
-    <option value="VN">Vietnam</option>
-    <option value="TH">Thailand</option>
-    <option value="MY">Malaysia</option>
-    <option value="OTHER">Other</option>
-  </select>
+  />
+  <p className="text-xs text-ash">
+    Leave blank to default to United States.
+  </p>
 </div>
             <div className="flex gap-3 pt-1">
               <Button type="submit" disabled={saving}>
@@ -156,6 +147,8 @@ export default function AddressesClient({
                 {addr.line2 ? `, ${addr.line2}` : ""}
                 <br />
                 {addr.city}, {addr.state} {addr.zip}
+                <br/>
+                {addr.country}
               </p>
               <button
                 onClick={() => handleDelete(addr.id)}

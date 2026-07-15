@@ -15,6 +15,7 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import CheckoutSteps from "./CheckoutSteps";
+import { Label } from "./ui/label";
 
 type Address = {
   id: string;
@@ -23,6 +24,7 @@ type Address = {
   city: string;
   state: string;
   zip: string;
+  country: string
 };
 
 export default function EquipmentCheckoutClient({
@@ -120,6 +122,8 @@ export default function EquipmentCheckoutClient({
                       {addr.line2 ? `, ${addr.line2}` : ""}
                       <br />
                       {addr.city}, {addr.state} {addr.zip}
+                      <br/>
+                      {addr.country}
                     </span>
                   </label>
                 ))}
@@ -230,7 +234,7 @@ function AddressForm({
   onCancel?: () => void;
 }) {
   const [form, setForm] = useState({
-    line1: "", line2: "", city: "", state: "", zip: "",
+    line1: "", line2: "", city: "", state: "", zip: "",country: "",
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -257,13 +261,45 @@ function AddressForm({
         <Input placeholder="Address line 2 (optional)" value={form.line2}
           onChange={(e) => setForm({ ...form, line2: e.target.value })} />
         <div className="grid grid-cols-3 gap-3">
-          <Input required placeholder="City" value={form.city}
-            onChange={(e) => setForm({ ...form, city: e.target.value })} />
-          <Input required placeholder="State" value={form.state}
-            onChange={(e) => setForm({ ...form, state: e.target.value })} />
-          <Input required placeholder="ZIP" value={form.zip}
-            onChange={(e) => setForm({ ...form, zip: e.target.value })} />
-        </div>
+  <Input
+    required
+    placeholder="City"
+    value={form.city}
+    onChange={(e) => setForm({ ...form, city: e.target.value })}
+  />
+
+  <Input
+    required
+    placeholder="State"
+    value={form.state}
+    onChange={(e) => setForm({ ...form, state: e.target.value })}
+  />
+
+  <Input
+    required
+    placeholder="ZIP"
+    value={form.zip}
+    onChange={(e) => setForm({ ...form, zip: e.target.value })}
+  />
+</div>
+
+<div className="space-y-1.5">
+  <Label htmlFor="country">Country</Label>
+  <Input
+    id="country"
+    placeholder="e.g. United States, UAE, UK"
+    value={form.country}
+    onChange={(e) =>
+      setForm({
+        ...form,
+        country: e.target.value,
+      })
+    }
+  />
+  <p className="text-xs text-ash">
+    Leave blank to default to United States.
+  </p>
+</div>
         {error && (
           <div className="flex items-center gap-2 text-sm text-red-700 bg-red-50 border border-red-100 rounded-md px-3 py-2.5">
             <AlertCircle size={13} /> {error}
