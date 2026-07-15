@@ -78,6 +78,42 @@ export default async function HomePage() {
         <FadeIn delay={0.16}><TrustItem icon={<PackageCheck size={22} strokeWidth={1.5} />} title="Built to order" copy="No warehouse markup, sourced per order." /></FadeIn>
       </section>
 
+   {/* TESTIMONIAL SECTION */}
+   {testimonials.length > 0 && (
+  <section className="max-w-6xl mx-auto px-8 py-20">
+    <FadeIn>
+      <div className="flex items-end justify-between mb-12">
+        <div>
+          <p className="text-xs uppercase tracking-[0.15em] text-ember font-medium mb-3">
+            From the field
+          </p>
+          <h2 className="font-display font-semibold text-3xl text-char max-w-md">
+            What café operators say after switching.
+          </h2>
+        </div>
+        <p className="text-ash text-sm max-w-xs text-right hidden md:block leading-relaxed">
+          Real feedback from independent operators and growing café groups.
+        </p>
+      </div>
+    </FadeIn>
+
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      {testimonials.map((t, i) => (
+        <FadeIn key={t.id} delay={i * 0.06}>
+          <TestimonialCard
+            name={t.name}
+            role={t.role}
+            company={t.company}
+            location={t.location}
+            quote={t.quote}
+            avatarUrl={t.avatarUrl}
+            featured={t.featured}
+          />
+        </FadeIn>
+      ))}
+    </div>
+  </section>
+)}
       {/* WHY DIRECT SOURCING */}
       <section className="max-w-6xl mx-auto px-8 py-20 border-t border-gray-100">
         <FadeIn>
@@ -121,42 +157,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* TESTIMONIAL SECTION */}
-{testimonials.length > 0 && (
-  <section className="max-w-6xl mx-auto px-8 py-20">
-    <FadeIn>
-      <div className="flex items-end justify-between mb-12">
-        <div>
-          <p className="text-xs uppercase tracking-[0.15em] text-ember font-medium mb-3">
-            From the field
-          </p>
-          <h2 className="font-display font-semibold text-3xl text-char max-w-md">
-            What café operators say after switching.
-          </h2>
-        </div>
-        <p className="text-ash text-sm max-w-xs text-right hidden md:block leading-relaxed">
-          Real feedback from independent operators and growing café groups.
-        </p>
-      </div>
-    </FadeIn>
-
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-      {testimonials.map((t, i) => (
-        <FadeIn key={t.id} delay={i * 0.06}>
-          <TestimonialCard
-            name={t.name}
-            role={t.role}
-            company={t.company}
-            location={t.location}
-            quote={t.quote}
-            avatarUrl={t.avatarUrl}
-            featured={t.featured}
-          />
-        </FadeIn>
-      ))}
-    </div>
-  </section>
-)}
+   
 
       {/* CTA BAND */}
       <section className="bg-ember">

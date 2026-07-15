@@ -13,6 +13,7 @@ import ReviewForm from "@/components/ReviewForm";
 import { StarDisplay } from "@/components/StarRating";
 import { getCurrentUser } from "@/lib/auth";
 import FadeIn from "@/components/FadeIn";
+import StockBadge from "@/components/StockBadge";
 
 export default async function PackagingDetailPage({
   params,
@@ -65,6 +66,7 @@ export default async function PackagingDetailPage({
                 {product.name}
               </h1>
 
+  
               {/* Rating summary */}
               {product.reviews.length > 0 && (
                 <div className="flex items-center gap-2 mt-1.5">
@@ -80,6 +82,11 @@ export default async function PackagingDetailPage({
               <p className="text-2xl font-semibold text-char mt-3">
                 ${(product.priceCents / 100).toFixed(2)}
               </p>
+
+              <StockBadge
+  stockQty={product.stockQty}
+  threshold={product.lowStockThreshold}
+/>
             </div>
 
             <Separator />

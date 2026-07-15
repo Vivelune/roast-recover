@@ -1,14 +1,17 @@
 import { getCurrentUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { LayoutDashboard, ClipboardList, Wrench, RefreshCw, MapPin } from "lucide-react";
+import { LayoutDashboard, ClipboardList, Wrench, RefreshCw, MapPin, Building2, Gift, BarChart2 } from "lucide-react";
 
 const sideLinks = [
   { href: "/account", label: "Overview", icon: LayoutDashboard },
   { href: "/account/orders", label: "Orders", icon: ClipboardList },
   { href: "/account/equipment", label: "Equipment", icon: Wrench },
+  { href: "/account/company", label: "Company", icon: Building2 },
   { href: "/account/subscriptions", label: "Subscriptions", icon: RefreshCw },
   { href: "/account/addresses", label: "Addresses", icon: MapPin },
+  { href: "/account/referrals", label: "Referrals", icon: Gift },
+  { href: "/account/analytics", label: "Analytics", icon: BarChart2 },
 ];
 
 export default async function AccountLayout({

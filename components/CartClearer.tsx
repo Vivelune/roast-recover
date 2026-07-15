@@ -14,6 +14,7 @@ export default function CartClearer({
   useEffect(() => {
     if (type === "packaging") {
       clearPackaging();
+      localStorage.removeItem("rr_ref");
     } else {
       clearEquipment();
     }

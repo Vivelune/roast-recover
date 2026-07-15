@@ -5,6 +5,8 @@ import { CheckCircle2, Clock, Package } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import CartClearer from "@/components/CartClearer";
+import InvoiceButton from "@/components/InvoiceButton";
+
 
 
 
@@ -151,6 +153,14 @@ const balanceOwed = depositPaid !== null
           <span>${(total / 100).toFixed(2)}</span>
         </div>
       </Card>
+
+
+      {(order.status === "PAID" ||
+  order.status === "IN_PRODUCTION" ||
+  order.status === "SHIPPED" ||
+  order.status === "DELIVERED") && (
+  <InvoiceButton orderId={order.id} />
+)}
 
       {/* Shipping address */}
       {order.shippingAddress && (

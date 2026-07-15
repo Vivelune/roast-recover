@@ -7,6 +7,7 @@ import { getCurrentUser } from "@/lib/auth";
 type CartItemInput = {
   productId: string;
   quantity: number;
+  
 };
 
 // Helper to safely remove a failed order
@@ -26,7 +27,8 @@ async function cleanupFailedOrder(orderId: string) {
 
 export async function createCheckoutSession(
   cartItems: CartItemInput[],
-  addressId: string
+  addressId: string,
+  refCode?: string  
 ) {
   const user = await getCurrentUser();
   if (!user) throw new Error("Not signed in");
@@ -88,6 +90,7 @@ export async function createCheckoutSession(
       metadata: {
         orderId: order.id,
         paymentType: "packaging",
+        refCode: refCode ?? "",
       },
       success_url: `${process.env.NEXT_PUBLIC_URL}/account/orders/${order.id}?success=true`,
       cancel_url: `${process.env.NEXT_PUBLIC_URL}/checkout`,
