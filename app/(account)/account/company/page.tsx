@@ -14,14 +14,15 @@ export default async function CompanyPage() {
 
   if (!user.companyId) {
     return (
-      <div>
-        <h1 className="font-display font-semibold text-2xl text-char mb-2">
-          Company account
-        </h1>
-        <p className="text-ash text-sm mb-8">
-          Set up a company account to manage multiple locations, team members,
-          and consolidated billing.
-        </p>
+      <div className="max-w-3xl mx-auto px-4 py-8 sm:py-12 space-y-6">
+        <div>
+          <h1 className="font-display font-semibold text-2xl text-char tracking-tight">
+            Company Account
+          </h1>
+          <p className="text-ash text-sm mt-0.5">
+            Set up a company profile to manage multiple retail locations, team permissions, and consolidated enterprise billing.
+          </p>
+        </div>
         <CreateCompanyForm />
       </div>
     );
@@ -84,95 +85,96 @@ export default async function CompanyPage() {
   const isOwner = currentMember?.role === "OWNER";
 
   return (
-    <div>
-      <div className="flex items-start justify-between mb-8">
-        <div>
-          <h1 className="font-display font-semibold text-2xl text-char mb-1">
-            {company.name}
-          </h1>
-          <p className="text-ash text-sm">
-            {company.members.length} member
-            {company.members.length !== 1 ? "s" : ""} ·{" "}
-            {currentMember?.role}
-          </p>
-        </div>
+    <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12 space-y-8">
+      {/* Header section */}
+      <div className="border-b border-gray-100 pb-4">
+        <h1 className="font-display font-semibold text-2xl text-char tracking-tight">
+          {company.name}
+        </h1>
+        <p className="text-ash text-xs font-bold uppercase tracking-wider mt-1">
+          {company.members.length} member{company.members.length !== 1 ? "s" : ""} &bull; {currentMember?.role}
+        </p>
       </div>
 
-      {/* Quarterly spend summary */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        <div className="border border-border rounded-lg p-4">
-          <p className="text-2xl font-display font-semibold text-char">
-            ${(totalQuarterlySpend / 100).toFixed(0)}
+      {/* Quarterly spend summary widgets */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="border border-gray-150 shadow-[0_1px_3px_rgba(0,0,0,0.01)] bg-white rounded-2xl p-5">
+          <p className="text-2xl font-display font-bold text-char tracking-tight">
+            ${(totalQuarterlySpend / 100).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
           </p>
-          <p className="text-xs text-ash mt-0.5">Spend last 90 days</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-ash mt-1">Spend Last 90 Days</p>
         </div>
-        <div className="border border-border rounded-lg p-4">
-          <p className="text-2xl font-display font-semibold text-char">
+        <div className="border border-gray-150 shadow-[0_1px_3px_rgba(0,0,0,0.01)] bg-white rounded-2xl p-5">
+          <p className="text-2xl font-display font-bold text-char tracking-tight">
             {allOrders.length}
           </p>
-          <p className="text-xs text-ash mt-0.5">Orders last 90 days</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-ash mt-1">Orders Last 90 Days</p>
         </div>
-        <div className="border border-border rounded-lg p-4">
-          <p className="text-2xl font-display font-semibold text-char">
+        <div className="border border-gray-150 shadow-[0_1px_3px_rgba(0,0,0,0.01)] bg-white rounded-2xl p-5">
+          <p className="text-2xl font-display font-bold text-char tracking-tight">
             {company.members.length}
           </p>
-          <p className="text-xs text-ash mt-0.5">Team members</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-ash mt-1">Active Team Members</p>
         </div>
       </div>
 
-      {/* Per-location breakdown */}
-      <div className="mb-8">
-        <p className="text-xs uppercase tracking-wide text-ash mb-3">
-          Spend by location — last 90 days
+      {/* Per-location breakdown metric tables */}
+      <div className="space-y-3">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-ash">
+          Spend breakdown by branch &bull; 90 Days
         </p>
-        <div className="border border-border rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-steam/40 border-b border-border">
-              <tr>
-                <th className="text-left px-4 py-3 text-xs font-medium text-ash">Location / member</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-ash">Orders</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-ash">Spend</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-ash">Share</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.entries(locationSpend).map(([userId, data]) => (
-                <tr key={userId} className="border-b border-border/50 last:border-0">
-                  <td className="px-4 py-3 text-char">{data.location}</td>
-                  <td className="px-4 py-3 text-ash">{data.orderCount}</td>
-                  <td className="px-4 py-3 text-char font-medium">
-                    ${(data.spend / 100).toFixed(0)}
-                  </td>
-                  <td className="px-4 py-3 text-ash">
-                    {totalQuarterlySpend > 0
-                      ? `${Math.round((data.spend / totalQuarterlySpend) * 100)}%`
-                      : "—"}
-                  </td>
+        <div className="border border-gray-150 shadow-[0_1px_3px_rgba(0,0,0,0.01)] bg-white rounded-2xl overflow-hidden">
+          <div className="w-full overflow-x-auto no-scrollbar">
+            <table className="w-full text-sm min-w-[500px]">
+              <thead className="bg-[#FBFBFA] border-b border-gray-150">
+                <tr>
+                  <th className="text-left px-5 py-3.5 text-[10px] font-bold uppercase tracking-wider text-ash">Location / Member</th>
+                  <th className="text-left px-5 py-3.5 text-[10px] font-bold uppercase tracking-wider text-ash">Orders Placed</th>
+                  <th className="text-left px-5 py-3.5 text-[10px] font-bold uppercase tracking-wider text-ash">Total Spend</th>
+                  <th className="text-left px-5 py-3.5 text-[10px] font-bold uppercase tracking-wider text-ash">Volume Share</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {Object.entries(locationSpend).map(([userId, data]) => (
+                  <tr key={userId} className="hover:bg-steam/20 transition-colors">
+                    <td className="px-5 py-3.5 text-char font-semibold">{data.location}</td>
+                    <td className="px-5 py-3.5 text-ash font-medium">{data.orderCount}</td>
+                    <td className="px-5 py-3.5 text-char font-bold">
+                      ${(data.spend / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                    </td>
+                    <td className="px-5 py-3.5 text-ash font-bold">
+                      {totalQuarterlySpend > 0
+                        ? `${Math.round((data.spend / totalQuarterlySpend) * 100)}%`
+                        : "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      {/* Team members */}
-      <div className="mb-6">
-        <p className="text-xs uppercase tracking-wide text-ash mb-3">
-          Team members
+      {/* Team roster logs */}
+      <div className="space-y-3">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-ash">
+          Team Roster
         </p>
-        <div className="space-y-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {company.members.map((member) => (
             <div
               key={member.id}
-              className="flex items-center justify-between border border-border rounded-lg px-4 py-3"
+              className="flex items-center justify-between border border-gray-150 shadow-[0_1px_3px_rgba(0,0,0,0.01)] bg-white rounded-2xl px-5 py-4"
             >
               <div>
-                <p className="text-sm font-medium text-char">
+                <p className="text-sm font-bold text-char">
                   {member.user.name ?? member.user.email}
                 </p>
-                <p className="text-xs text-ash">
+                <p className="text-xs text-ash font-medium mt-0.5">
                   {member.location ? `${member.location} · ` : ""}
-                  {member.role}
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-steam text-char px-1.5 py-0.5 rounded border border-gray-200/40 ml-0.5">
+                    {member.role.toLowerCase()}
+                  </span>
                 </p>
               </div>
               {isOwner && member.userId !== user.id && (
@@ -187,7 +189,7 @@ export default async function CompanyPage() {
                 >
                   <button
                     type="submit"
-                    className="text-xs text-ash hover:text-red-500 transition-colors"
+                    className="text-xs font-bold uppercase tracking-wider text-ash hover:text-red-500 transition-colors px-2 py-1 border border-gray-200 hover:border-red-100 rounded-lg hover:bg-red-50"
                   >
                     Remove
                   </button>
@@ -198,9 +200,11 @@ export default async function CompanyPage() {
         </div>
       </div>
 
-      {/* Invite member — owners only */}
+      {/* Invite member form overlay — structural owners only */}
       {isOwner && (
-        <CompanyClient companyId={company.id} />
+        <div className="pt-4">
+          <CompanyClient companyId={company.id} />
+        </div>
       )}
     </div>
   );
