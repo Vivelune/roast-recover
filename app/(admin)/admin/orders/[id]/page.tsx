@@ -91,7 +91,6 @@ export default async function AdminOrderDetailPage({
       })),
     };
   
-    // Trigger the right email based on the new item status
     try {
       if (newStatus === "IN_PRODUCTION") {
         const { sendInProductionEmail } = await import("@/lib/status-emails");
@@ -103,7 +102,6 @@ export default async function AdminOrderDetailPage({
         const { sendDeliveredEmail } = await import("@/lib/status-emails");
         await sendDeliveredEmail(ctx);
   
-        // Equipment registry entry
         const existing = await prisma.equipmentRegistryItem.findFirst({
           where: {
             userId: updatedOrder.userId,
@@ -127,7 +125,6 @@ export default async function AdminOrderDetailPage({
       }
     } catch (emailErr) {
       console.error("[admin] Status email failed:", emailErr);
-      // Non-blocking — status update succeeded even if email fails
     }
   
     revalidatePath(`/admin/orders/${item.orderId}`);
@@ -139,150 +136,164 @@ export default async function AdminOrderDetailPage({
     "use server";
     const itemId = formData.get("itemId") as string;
     const result = await createBalanceCheckoutForItem(itemId);
-    // Email is now sent inside createBalanceCheckoutForItem
-    // Log URL as fallback
     console.log(`[admin] Balance URL for item ${itemId}:`, result.checkoutUrl);
     revalidatePath(`/admin/orders/${id}`);
   }
+
   const statusOptions = [
     "PENDING_DEPOSIT", "AWAITING_BALANCE", "IN_PRODUCTION",
     "SHIPPED", "DELIVERED", "CANCELLED",
   ];
 
   return (
-    <div className="max-w-2xl">
-      <div className="flex items-center justify-between mb-6">
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Header Info */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="font-display font-semibold text-2xl text-char mb-1">
+          <h1 className="font-display font-semibold text-2xl sm:text-3xl text-char tracking-tight">
             Order #{order.id.slice(-8).toUpperCase()}
           </h1>
-          <p className="text-sm text-ash">{order.user.email}</p>
+          <p className="text-sm text-ash font-medium mt-1">{order.user.email}</p>
         </div>
-        <span className="text-xs uppercase tracking-wide bg-steam text-ash px-3 py-1.5 rounded-md">
+        <span className="self-start sm:self-center text-xs uppercase tracking-wider font-bold bg-[#F0ECE6] border border-gray-200 text-char px-3 py-1.5 rounded-full">
           {order.status.replace(/_/g, " ")}
         </span>
       </div>
 
-      <Card className="p-5 mb-6">
-        <p className="text-xs uppercase tracking-wide text-ash mb-4">Items</p>
-        <div className="space-y-5">
-          {order.items.map((item, i) => {
-            const isEquipment = item.depositPercent !== null;
-            const deposit = isEquipment
-              ? Math.round((item.unitPriceCents * (item.depositPercent ?? 0)) / 100)
-              : null;
+      {/* Grid containing details & shipping */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Main Items Column */}
+        <div className="lg:col-span-2 space-y-6">
+          <Card className="p-5 sm:p-6 border-gray-150 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+            <p className="text-[11px] uppercase tracking-wider font-bold text-ash mb-5">Order Items</p>
+            
+            <div className="space-y-6">
+              {order.items.map((item, i) => {
+                const isEquipment = item.depositPercent !== null;
+                const deposit = isEquipment
+                  ? Math.round((item.unitPriceCents * (item.depositPercent ?? 0)) / 100)
+                  : null;
 
-            return (
-              <div key={item.id}>
-                {i > 0 && <Separator className="mb-5" />}
-                <div className="flex items-start justify-between gap-4 mb-3">
-                  <div>
-                    <p className="text-sm font-medium text-char">
-                      {item.product.name} × {item.quantity}
-                    </p>
-                    <p className="text-xs text-ash mt-0.5">
-  ${((item.unitPriceCents * item.quantity) / 100).toFixed(2)}
-  {deposit !== null && item.depositPaidAt && (
-    ` · $${((deposit * item.quantity) / 100).toFixed(2)} deposit received`
-  )}
-  {deposit !== null && !item.depositPaidAt && (
-    ` · $${((deposit * item.quantity) / 100).toFixed(2)} deposit pending`
-  )}
-</p>
+                return (
+                  <div key={item.id} className="group">
+                    {i > 0 && <Separator className="my-6" />}
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4">
+                      <div>
+                        <p className="text-sm font-semibold text-char">
+                          {item.product.name}
+                        </p>
+                        <p className="text-xs font-semibold text-ash/80 mt-1">
+                          Qty: <span className="text-char">{item.quantity}</span>
+                          {" · "}${((item.unitPriceCents * item.quantity) / 100).toFixed(2)}
+                          {deposit !== null && item.depositPaidAt && (
+                            <span className="text-emerald-700 font-semibold block sm:inline"> · Deposit Paid (${((deposit * item.quantity) / 100).toFixed(2)})</span>
+                          )}
+                          {deposit !== null && !item.depositPaidAt && (
+                            <span className="text-amber-700 font-semibold block sm:inline"> · Deposit Pending</span>
+                          )}
+                        </p>
+                        {isEquipment && (
+                          <div className="mt-2.5 inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-blue-50 text-[11px] font-bold text-blue-700 uppercase tracking-wider">
+                            {itemStatusLabel[item.itemStatus ?? "PENDING_DEPOSIT"]}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Controls section */}
                     {isEquipment && (
-                      <p className="text-xs text-blue-600 mt-1">
-                        {itemStatusLabel[item.itemStatus ?? "PENDING_DEPOSIT"]}
-                      </p>
+                      <div className="bg-[#FBFBFA] border border-gray-200/60 rounded-lg p-4 space-y-4">
+                        <form action={handleStatusUpdate} className="space-y-3">
+                          <input type="hidden" name="itemId" value={item.id} />
+
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                            <select
+                              name="status"
+                              defaultValue={item.itemStatus ?? "PENDING_DEPOSIT"}
+                              className="border border-gray-200 rounded-lg text-xs px-3 py-2 bg-white text-char font-semibold flex-1 sm:max-w-[180px]"
+                            >
+                              {statusOptions.map((s) => (
+                                <option key={s} value={s}>
+                                  {s.replace(/_/g, " ")}
+                                </option>
+                              ))}
+                            </select>
+
+                            <button
+                              type="submit"
+                              className="bg-char hover:bg-char/90 active:scale-[0.98] transition-all text-white text-xs px-4 py-2 rounded-lg font-bold shadow-sm"
+                            >
+                              Update Status
+                            </button>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            <input
+                              name="trackingNumber"
+                              placeholder="Tracking number (optional)"
+                              className="border border-gray-200 rounded-lg text-xs px-3 py-2 text-char placeholder:text-ash bg-white"
+                            />
+
+                            <input
+                              name="trackingUrl"
+                              placeholder="Tracking URL (optional)"
+                              className="border border-gray-200 rounded-lg text-xs px-3 py-2 text-char placeholder:text-ash bg-white"
+                            />
+                          </div>
+
+                          <p className="text-[10px] text-ash font-medium">
+                            Tracking info is included in the shipment email notification when status changes to SHIPPED.
+                          </p>
+                        </form>
+
+                        {item.itemStatus === "AWAITING_BALANCE" && (
+                          <form action={handleSendBalance} className="pt-2">
+                            <input type="hidden" name="itemId" value={item.id} />
+                            <button
+                              type="submit"
+                              className="w-full sm:w-auto bg-ember hover:bg-ember-dark text-white text-xs px-4 py-2 rounded-lg font-bold shadow-sm transition-all duration-150"
+                            >
+                              Send Balance Invoice Link
+                            </button>
+                          </form>
+                        )}
+                      </div>
                     )}
                   </div>
-                </div>
+                );
+              })}
+            </div>
+            
+            <Separator className="my-5" />
+            <div className="flex justify-between items-center text-sm sm:text-base font-bold text-char">
+              <span>Grand Total</span>
+              <span className="text-lg text-char">${(total / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+            </div>
+          </Card>
+        </div>
 
-                {/* Per-item controls for equipment */}
-                {isEquipment && (
-  <div className="space-y-3">
-    <form action={handleStatusUpdate} className="space-y-2">
-      <input type="hidden" name="itemId" value={item.id} />
-
-      <div className="flex items-center gap-2 flex-wrap">
-        <select
-          name="status"
-          defaultValue={item.itemStatus ?? "PENDING_DEPOSIT"}
-          className="border border-border rounded-md text-xs px-2.5 py-1.5 bg-white text-char"
-        >
-          {statusOptions.map((s) => (
-            <option key={s} value={s}>
-              {s.replace(/_/g, " ")}
-            </option>
-          ))}
-        </select>
-
-        <button
-          type="submit"
-          className="bg-graphite text-white text-xs px-3 py-1.5 rounded-md"
-        >
-          Update
-        </button>
-      </div>
-
-      <div className="grid grid-cols-2 gap-2">
-        <input
-          name="trackingNumber"
-          placeholder="Tracking number (optional)"
-          className="border border-border rounded-md text-xs px-2.5 py-1.5 text-char placeholder:text-ash"
-        />
-
-        <input
-          name="trackingUrl"
-          placeholder="Tracking URL (optional)"
-          className="border border-border rounded-md text-xs px-2.5 py-1.5 text-char placeholder:text-ash"
-        />
-      </div>
-
-      <p className="text-[10px] text-ash">
-        Tracking fields are included in the shipping email when status is set to SHIPPED.
-      </p>
-    </form>
-
-    {item.itemStatus === "AWAITING_BALANCE" && (
-      <form action={handleSendBalance}>
-        <input type="hidden" name="itemId" value={item.id} />
-        <button
-          type="submit"
-          className="bg-ember text-white text-xs px-3 py-1.5 rounded-md"
-        >
-          Send balance payment link
-        </button>
-      </form>
-    )}
-  </div>
-)}
+        {/* Sidebar Delivery Address Column */}
+        <div className="lg:col-span-1">
+          {order.shippingAddress && (
+            <Card className="p-5 border-gray-150 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.02)] h-fit">
+              <p className="text-[11px] uppercase tracking-wider font-bold text-ash mb-3">
+                Shipping Address
+              </p>
+              <div className="text-sm text-char leading-relaxed bg-[#FBFBFA] border border-gray-200/50 rounded-lg p-3.5 font-medium">
+                <p>{order.shippingAddress.line1}</p>
+                {order.shippingAddress.line2 && (
+                  <p>{order.shippingAddress.line2}</p>
+                )}
+                <p>
+                  {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zip}
+                </p>
               </div>
-            );
-          })}
+            </Card>
+          )}
         </div>
-        <Separator className="my-4" />
-        <div className="flex justify-between text-sm font-semibold text-char">
-          <span>Total</span>
-          <span>${(total / 100).toFixed(2)}</span>
-        </div>
-      </Card>
 
-      {order.shippingAddress && (
-        <Card className="p-5">
-          <p className="text-xs uppercase tracking-wide text-ash mb-3">
-            Shipping address
-          </p>
-          <p className="text-sm text-char leading-relaxed">
-            {order.shippingAddress.line1}
-            {order.shippingAddress.line2
-              ? `, ${order.shippingAddress.line2}`
-              : ""}
-            <br />
-            {order.shippingAddress.city}, {order.shippingAddress.state}{" "}
-            {order.shippingAddress.zip}
-          </p>
-        </Card>
-      )}
+      </div>
     </div>
   );
 }

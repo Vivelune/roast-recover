@@ -31,10 +31,15 @@ export default async function AdminCustomersPage() {
   });
 
   return (
-    <div>
-      <h1 className="font-display font-semibold text-2xl text-char mb-8">
-        Customers
-      </h1>
+    <div className="max-w-5xl mx-auto px-4 py-8 sm:py-12 space-y-8">
+      <div>
+        <h1 className="font-display font-semibold text-2xl sm:text-3xl text-char tracking-tight mb-2">
+          Customers
+        </h1>
+        <p className="text-sm text-ash">
+          Monitor your registered customer directory, track total order values, and review individual user profiles.
+        </p>
+      </div>
       <CustomersTable data={data} />
     </div>
   );

@@ -36,120 +36,148 @@ export default function ProductEditClient({
   updateAction: (formData: FormData) => Promise<void>;
 }) {
   const [images, setImages] = useState<string[]>(product.images ?? []);
+  const [saving, setSaving] = useState(false);
 
   const isEquipment = product.category === "EQUIPMENT";
   const isPackaging = product.category === "PACKAGING";
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    // Inject the images array as JSON (can't pass arrays through native form)
-    formData.set("images", JSON.stringify(images));
-    await updateAction(formData);
+    setSaving(true);
+    try {
+      const formData = new FormData(e.currentTarget);
+      // Inject the images array as JSON (can't pass arrays through native form)
+      formData.set("images", JSON.stringify(images));
+      await updateAction(formData);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update product");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
-    <Card className="p-6">
-      <form onSubmit={handleSubmit} className="space-y-5">
+    <Card className="p-5 sm:p-6 border-gray-150 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+      <form onSubmit={handleSubmit} className="space-y-6">
 
         {/* Images */}
-        <div className="space-y-1.5">
-          <Label>Product images</Label>
+        <div className="space-y-2">
+          <Label className="text-xs font-bold uppercase tracking-wider text-char">Product Media</Label>
           <ImageUploader value={images} onChange={setImages} />
         </div>
 
-        {/* Name */}
-        <div className="space-y-1.5">
-          <Label htmlFor="name">Product name</Label>
-          <Input
-            id="name"
-            name="name"
-            required
-            defaultValue={product.name}
-          />
+        <Separator />
+
+        {/* Core Info */}
+        <div className="space-y-4">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-ash">General Information</p>
+          
+          <div className="space-y-1.5">
+            <Label htmlFor="name" className="text-xs font-semibold text-char">Product name</Label>
+            <Input
+              id="name"
+              name="name"
+              required
+              defaultValue={product.name}
+              className="h-10 border-gray-200 focus-visible:ring-ember bg-white text-char"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="shortDesc" className="text-xs font-semibold text-char">
+              Short description <span className="text-ash font-normal text-[11px]">(Result snippet)</span>
+            </Label>
+            <Input
+              id="shortDesc"
+              name="shortDesc"
+              placeholder="e.g. High-volume dual-boiler for busy café service"
+              defaultValue={product.shortDesc ?? ""}
+              className="h-10 border-gray-200 focus-visible:ring-ember bg-white text-char placeholder:text-ash"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="description" className="text-xs font-semibold text-char">Full Description</Label>
+            <Textarea
+              id="description"
+              name="description"
+              required
+              rows={4}
+              defaultValue={product.description}
+              className="border-gray-200 focus-visible:ring-ember bg-white text-char"
+            />
+          </div>
         </div>
 
-        {/* Description */}
-        <div className="space-y-1.5">
-          <Label htmlFor="description">Description</Label>
-          <Textarea
-            id="description"
-            name="description"
-            required
-            rows={3}
-            defaultValue={product.description}
-          />
-        </div>
-
-        {/* Short description */}
-        <div className="space-y-1.5">
-          <Label htmlFor="shortDesc">
-            Short description{" "}
-            <span className="text-ash text-xs">(shown in search results)</span>
-          </Label>
-          <Input
-            id="shortDesc"
-            name="shortDesc"
-            placeholder="One-line summary..."
-            defaultValue={product.shortDesc ?? ""}
-          />
-        </div>
+        <Separator />
 
         {/* Price */}
-        <div className="space-y-1.5">
-          <Label htmlFor="price">Price (USD)</Label>
-          <Input
-            id="price"
-            name="price"
-            type="number"
-            step="0.01"
-            required
-            defaultValue={(product.priceCents / 100).toFixed(2)}
-          />
+        <div className="space-y-4">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-ash font-semibold">Pricing</p>
+          <div className="space-y-1.5 max-w-xs">
+            <Label htmlFor="price" className="text-xs font-semibold text-char">Price (USD)</Label>
+            <Input
+              id="price"
+              name="price"
+              type="number"
+              step="0.01"
+              required
+              defaultValue={(product.priceCents / 100).toFixed(2)}
+              className="h-10 border-gray-200 focus-visible:ring-ember bg-white text-char"
+            />
+          </div>
         </div>
 
         {/* ── EQUIPMENT ONLY ─────────────────────────────────── */}
         {isEquipment && (
           <>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="depositPercent">Deposit %</Label>
-                <Input
-                  id="depositPercent"
-                  name="depositPercent"
-                  type="number"
-                  min="1"
-                  max="100"
-                  placeholder="e.g. 30"
-                  defaultValue={product.depositPercent ?? ""}
-                />
+            <Separator />
+            <div className="space-y-4 bg-[#FBFBFA] border border-gray-200/60 p-4 rounded-xl">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-ash">Equipment Settings</p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="depositPercent" className="text-xs font-semibold text-char">Required Deposit (%)</Label>
+                  <Input
+                    id="depositPercent"
+                    name="depositPercent"
+                    type="number"
+                    min="1"
+                    max="100"
+                    placeholder="e.g. 30"
+                    defaultValue={product.depositPercent ?? ""}
+                    className="h-10 border-gray-200 focus-visible:ring-ember bg-white text-char"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="leadTimeDays" className="text-xs font-semibold text-char">Lead time (days)</Label>
+                  <Input
+                    id="leadTimeDays"
+                    name="leadTimeDays"
+                    type="number"
+                    placeholder="e.g. 21"
+                    defaultValue={product.leadTimeDays ?? ""}
+                    className="h-10 border-gray-200 focus-visible:ring-ember bg-white text-char"
+                  />
+                </div>
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="leadTimeDays">Lead time (days)</Label>
-                <Input
-                  id="leadTimeDays"
-                  name="leadTimeDays"
-                  type="number"
-                  placeholder="e.g. 21"
-                  defaultValue={product.leadTimeDays ?? ""}
-                />
-              </div>
-            </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="machineType">Machine type</Label>
-              <select
-                id="machineType"
-                name="machineType"
-                defaultValue={product.machineType ?? ""}
-                className="w-full border border-border rounded-md px-3 py-2.5 text-sm bg-white text-char focus:outline-none focus:ring-1 focus:ring-ember"
-              >
-                <option value="">Select type...</option>
-                <option value="espresso">Espresso machine</option>
-                <option value="grinder">Grinder</option>
-                <option value="batch-brew">Batch brew</option>
-                <option value="accessories">Accessories</option>
-              </select>
+              <div className="space-y-1.5">
+                <Label htmlFor="machineType" className="text-xs font-semibold text-char">Machine type</Label>
+                <select
+                  id="machineType"
+                  name="machineType"
+                  defaultValue={product.machineType ?? ""}
+                  className="w-full border border-gray-200 rounded-md px-3 h-10 text-xs bg-white text-char font-semibold focus:outline-none focus:ring-1 focus:ring-ember"
+                >
+                  <option value="">Select type...</option>
+                  <option value="espresso">Espresso machine</option>
+                  <option value="grinder">Grinder</option>
+                  <option value="batch-brew">Batch brew</option>
+                  <option value="accessories">Accessories</option>
+                </select>
+              </div>
             </div>
           </>
         )}
@@ -157,124 +185,139 @@ export default function ProductEditClient({
         {/* ── PACKAGING ONLY ─────────────────────────────────── */}
         {isPackaging && (
           <>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="packageSize">Cup size</Label>
-                <select
-                  id="packageSize"
-                  name="packageSize"
-                  defaultValue={product.packageSize ?? ""}
-                  className="w-full border border-border rounded-md px-3 py-2.5 text-sm bg-white text-char focus:outline-none focus:ring-1 focus:ring-ember"
-                >
-                  <option value="">Any / N/A</option>
-                  <option value="4oz">4oz</option>
-                  <option value="8oz">8oz</option>
-                  <option value="12oz">12oz</option>
-                  <option value="16oz">16oz</option>
-                  <option value="20oz">20oz</option>
-                  <option value="24oz">24oz</option>
-                </select>
+            <Separator />
+            <div className="space-y-4 bg-[#FBFBFA] border border-gray-200/60 p-4 rounded-xl">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-ash">Packaging Configurations</p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="stockQty" className="text-xs font-semibold text-char">
+                    Stock quantity <span className="text-ash font-normal">(blank = unlimited)</span>
+                  </Label>
+                  <Input
+                    id="stockQty"
+                    name="stockQty"
+                    type="number"
+                    min="0"
+                    placeholder="e.g. 200"
+                    defaultValue={product.stockQty ?? ""}
+                    className="h-10 border-gray-200 focus-visible:ring-ember bg-white text-char"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="lowStockThreshold" className="text-xs font-semibold text-char">Low stock alert at</Label>
+                  <Input
+                    id="lowStockThreshold"
+                    name="lowStockThreshold"
+                    type="number"
+                    min="1"
+                    defaultValue={product.lowStockThreshold ?? 10}
+                    className="h-10 border-gray-200 focus-visible:ring-ember bg-white text-char"
+                  />
+                </div>
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="material">Material</Label>
-                <select
-                  id="material"
-                  name="material"
-                  defaultValue={product.material ?? ""}
-                  className="w-full border border-border rounded-md px-3 py-2.5 text-sm bg-white text-char focus:outline-none focus:ring-1 focus:ring-ember"
-                >
-                  <option value="">Any / N/A</option>
-                  <option value="paper">Paper</option>
-                  <option value="compostable">Compostable</option>
-                  <option value="plastic">Plastic</option>
-                  <option value="PLA">PLA</option>
-                </select>
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="caseQty">Units per case</Label>
-                <Input
-                  id="caseQty"
-                  name="caseQty"
-                  type="number"
-                  placeholder="e.g. 500"
-                  defaultValue={product.caseQty ?? ""}
-                />
-              </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="stockQty">
-                  Stock quantity{" "}
-                  <span className="text-ash text-xs">(blank = unlimited)</span>
-                </Label>
-                <Input
-                  id="stockQty"
-                  name="stockQty"
-                  type="number"
-                  min="0"
-                  placeholder="e.g. 200"
-                  defaultValue={product.stockQty ?? ""}
-                />
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="packageSize" className="text-xs font-semibold text-char">Cup size</Label>
+                  <select
+                    id="packageSize"
+                    name="packageSize"
+                    defaultValue={product.packageSize ?? ""}
+                    className="w-full border border-gray-200 rounded-md px-3 h-10 text-xs bg-white text-char font-semibold focus:outline-none focus:ring-1 focus:ring-ember"
+                  >
+                    <option value="">Any / N/A</option>
+                    <option value="4oz">4oz</option>
+                    <option value="8oz">8oz</option>
+                    <option value="12oz">12oz</option>
+                    <option value="16oz">16oz</option>
+                    <option value="20oz">20oz</option>
+                    <option value="24oz">24oz</option>
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="material" className="text-xs font-semibold text-char">Material</Label>
+                  <select
+                    id="material"
+                    name="material"
+                    defaultValue={product.material ?? ""}
+                    className="w-full border border-gray-200 rounded-md px-3 h-10 text-xs bg-white text-char font-semibold focus:outline-none focus:ring-1 focus:ring-ember"
+                  >
+                    <option value="">Any / N/A</option>
+                    <option value="paper">Paper</option>
+                    <option value="compostable">Compostable</option>
+                    <option value="plastic">Plastic</option>
+                    <option value="PLA">PLA</option>
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="caseQty" className="text-xs font-semibold text-char">Units per case</Label>
+                  <Input
+                    id="caseQty"
+                    name="caseQty"
+                    type="number"
+                    placeholder="e.g. 500"
+                    defaultValue={product.caseQty ?? ""}
+                    className="h-10 border-gray-200 focus-visible:ring-ember bg-white text-char"
+                  />
+                </div>
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="lowStockThreshold">Low stock alert at</Label>
-                <Input
-                  id="lowStockThreshold"
-                  name="lowStockThreshold"
-                  type="number"
-                  min="1"
-                  defaultValue={product.lowStockThreshold ?? 10}
-                />
+
+              <div className="space-y-4 pt-2">
+                <div className="space-y-1.5">
+                  <Label htmlFor="stripePriceId" className="text-xs font-semibold text-char">
+                    Stripe Price ID <span className="text-ash font-normal">(for automated subscriptions)</span>
+                  </Label>
+                  <Input
+                    id="stripePriceId"
+                    name="stripePriceId"
+                    placeholder="price_XXXXXX"
+                    defaultValue={product.stripePriceId ?? ""}
+                    className="h-10 border-gray-200 focus-visible:ring-ember bg-white text-char placeholder:text-ash"
+                  />
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    id="isSubscribable"
+                    name="isSubscribable"
+                    defaultChecked={product.isSubscribable}
+                    className="accent-ember w-4 h-4 rounded cursor-pointer"
+                  />
+                  <Label htmlFor="isSubscribable" className="text-xs font-semibold text-char cursor-pointer">
+                    Allow automated recurring subscriptions (auto-reorder)
+                  </Label>
+                </div>
               </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="stripePriceId">
-                Stripe Price ID{" "}
-                <span className="text-ash text-xs">(subscriptions only)</span>
-              </Label>
-              <Input
-                id="stripePriceId"
-                name="stripePriceId"
-                placeholder="price_XXXXXX"
-                defaultValue={product.stripePriceId ?? ""}
-              />
-            </div>
-
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="isSubscribable"
-                name="isSubscribable"
-                defaultChecked={product.isSubscribable}
-                className="accent-ember w-4 h-4"
-              />
-              <Label htmlFor="isSubscribable" className="cursor-pointer">
-                Allow auto-reorder subscription
-              </Label>
             </div>
           </>
         )}
 
-        {/* Tags — both categories */}
+        <Separator />
+
+        {/* Tags */}
         <div className="space-y-1.5">
-          <Label htmlFor="tags">
-            Tags{" "}
-            <span className="text-ash text-xs">(comma-separated)</span>
+          <Label htmlFor="tags" className="text-xs font-semibold text-char">
+            Search Tags <span className="text-ash font-normal">(comma-separated)</span>
           </Label>
           <Input
             id="tags"
             name="tags"
             placeholder="e.g. dual-boiler, NSF, high-volume"
             defaultValue={product.tags?.join(", ") ?? ""}
+            className="h-10 border-gray-200 focus-visible:ring-ember bg-white text-char placeholder:text-ash"
           />
         </div>
 
-        <Button type="submit" className="w-full bg-ember hover:bg-ember-dark">
-          Save changes
+        <Button type="submit" disabled={saving} className="w-full text-white bg-ember hover:bg-ember-dark h-11 text-xs uppercase tracking-wider font-bold transition-all shadow-sm">
+          {saving ? "Saving Changes..." : "Save Changes"}
         </Button>
       </form>
     </Card>
   );
 }
+
+const Separator = () => (
+  <hr className="border-t border-gray-100 my-4" />
+);

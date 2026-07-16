@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { SlidersHorizontal, X } from "lucide-react";
 
@@ -28,6 +29,7 @@ export default function EquipmentFilters({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   function applyFilter(key: string, value: string | null) {
     const params = new URLSearchParams();
@@ -39,39 +41,25 @@ export default function EquipmentFilters({
     router.push(query ? `${pathname}?${query}` : pathname);
   }
 
-  return (
+  const filterContent = (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-char flex items-center gap-1.5">
-          <SlidersHorizontal size={14} /> Filters
-        </p>
-        {activeFilterCount > 0 && (
-          <button
-            onClick={() => router.push(pathname)}
-            className="text-xs text-ember hover:underline flex items-center gap-1"
-          >
-            <X size={11} /> Clear all
-          </button>
-        )}
-      </div>
-
       {/* Machine type */}
       {machineTypes.length > 0 && (
-        <div>
-          <p className="text-xs uppercase tracking-wide text-ash mb-2.5">
-            Type
+        <div className="border-b border-gray-100 pb-5 last:border-0 last:pb-0">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-ash mb-3">
+            Machine Type
           </p>
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             {machineTypes.map((t) => (
               <button
                 key={t}
                 onClick={() =>
                   applyFilter("type", activeType === t ? null : t)
                 }
-                className={`w-full text-left text-sm px-3 py-2 rounded-md transition-colors ${
+                className={`w-full text-left text-xs font-semibold px-3 py-2 rounded-lg transition-all ${
                   activeType === t
-                    ? "bg-ember text-white"
-                    : "text-ash hover:bg-steam hover:text-char"
+                    ? "bg-char text-white shadow-sm"
+                    : "text-ash hover:bg-steam/40 hover:text-char"
                 }`}
               >
                 {MACHINE_TYPE_LABELS[t] ?? t}
@@ -82,11 +70,11 @@ export default function EquipmentFilters({
       )}
 
       {/* Price range */}
-      <div>
-        <p className="text-xs uppercase tracking-wide text-ash mb-2.5">
-          Max price
+      <div className="border-b border-gray-100 pb-5 last:border-0 last:pb-0">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-ash mb-3">
+          Price Limit
         </p>
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           {[5000, 10000, 15000, 20000].map((price) => {
             const val = String(price);
             return (
@@ -98,10 +86,10 @@ export default function EquipmentFilters({
                     activeMaxPrice === val ? null : val
                   )
                 }
-                className={`w-full text-left text-sm px-3 py-2 rounded-md transition-colors ${
+                className={`w-full text-left text-xs font-semibold px-3 py-2 rounded-lg transition-all ${
                   activeMaxPrice === val
-                    ? "bg-ember text-white"
-                    : "text-ash hover:bg-steam hover:text-char"
+                    ? "bg-char text-white shadow-sm"
+                    : "text-ash hover:bg-steam/40 hover:text-char"
                 }`}
               >
                 Up to ${price.toLocaleString()}
@@ -112,11 +100,11 @@ export default function EquipmentFilters({
       </div>
 
       {/* Lead time */}
-      <div>
-        <p className="text-xs uppercase tracking-wide text-ash mb-2.5">
-          Lead time
+      <div className="border-b border-gray-100 pb-5 last:border-0 last:pb-0">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-ash mb-3">
+          Maximum Lead Time
         </p>
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           {[14, 21, 30].map((days) => {
             const val = String(days);
             return (
@@ -128,10 +116,10 @@ export default function EquipmentFilters({
                     activeMaxLeadTime === val ? null : val
                   )
                 }
-                className={`w-full text-left text-sm px-3 py-2 rounded-md transition-colors ${
+                className={`w-full text-left text-xs font-semibold px-3 py-2 rounded-lg transition-all ${
                   activeMaxLeadTime === val
-                    ? "bg-ember text-white"
-                    : "text-ash hover:bg-steam hover:text-char"
+                    ? "bg-char text-white shadow-sm"
+                    : "text-ash hover:bg-steam/40 hover:text-char"
                 }`}
               >
                 Under {days} days
@@ -141,5 +129,85 @@ export default function EquipmentFilters({
         </div>
       </div>
     </div>
+  );
+
+  return (
+    <>
+      {/* Mobile Toggle Trigger Button */}
+      <div className="w-full lg:hidden mb-6">
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-white border border-gray-200 rounded-xl font-semibold text-char text-sm hover:border-char/25 transition-colors shadow-sm"
+        >
+          <SlidersHorizontal size={14} />
+          <span>Filters</span>
+          {activeFilterCount > 0 && (
+            <span className="flex items-center justify-center bg-ember text-white rounded-full w-4 h-4 text-[9px] font-bold">
+              {activeFilterCount}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {/* Desktop Sidebar Layout */}
+      <aside className="hidden lg:block w-48 flex-shrink-0 bg-white border border-gray-150 p-4 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.01)]">
+        <div className="flex items-center justify-between border-b border-gray-100 pb-3.5 mb-4">
+          <p className="text-xs font-bold text-char uppercase tracking-wider flex items-center gap-1.5">
+            <SlidersHorizontal size={12} /> Filters
+          </p>
+          {activeFilterCount > 0 && (
+            <button
+              onClick={() => router.push(pathname)}
+              className="text-[10px] font-bold text-ember hover:text-ember-dark flex items-center gap-0.5"
+            >
+              <X size={10} /> Clear
+            </button>
+          )}
+        </div>
+        {filterContent}
+      </aside>
+
+      {/* Mobile Sidebar Off-canvas Drawer */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          {/* Backdrop blur */}
+          <div
+            onClick={() => setMobileOpen(false)}
+            className="fixed inset-0 bg-char/40 backdrop-blur-sm"
+          />
+          {/* Content panel */}
+          <div className="fixed inset-y-0 left-0 w-full max-w-xs bg-white p-5 flex flex-col justify-between shadow-2xl animate-in slide-in-from-left duration-200">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                <p className="text-sm font-bold text-char uppercase tracking-wider flex items-center gap-2">
+                  <SlidersHorizontal size={14} /> Filter Options
+                </p>
+                <button
+                  onClick={() => setMobileOpen(false)}
+                  className="p-1 hover:bg-steam rounded-md transition-colors"
+                >
+                  <X size={18} className="text-ash" />
+                </button>
+              </div>
+
+              {filterContent}
+            </div>
+
+            {/* Bottom action drawer button */}
+            {activeFilterCount > 0 && (
+              <button
+                onClick={() => {
+                  router.push(pathname);
+                  setMobileOpen(false);
+                }}
+                className="w-full mt-4 py-3 border border-red-200 text-red-600 bg-red-50/50 hover:bg-red-50 text-xs font-bold uppercase tracking-wider rounded-xl transition-all"
+              >
+                Clear All Filters
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+    </>
   );
 }

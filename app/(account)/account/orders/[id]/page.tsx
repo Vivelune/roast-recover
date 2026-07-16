@@ -7,19 +7,16 @@ import { Separator } from "@/components/ui/separator";
 import CartClearer from "@/components/CartClearer";
 import InvoiceButton from "@/components/InvoiceButton";
 
-
-
-
-export const dynamic = "force-dynamic"; // ← prevents caching of this page
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 const itemStatusLabel: Record<string, { label: string; color: string }> = {
-  PENDING_DEPOSIT:  { label: "Awaiting deposit",              color: "text-yellow-600 bg-yellow-50" },
-  AWAITING_BALANCE: { label: "Deposit paid — balance due",    color: "text-blue-600 bg-blue-50" },
-  IN_PRODUCTION:    { label: "In production",                 color: "text-purple-600 bg-purple-50" },
-  SHIPPED:          { label: "Shipped",                       color: "text-indigo-600 bg-indigo-50" },
-  DELIVERED:        { label: "Delivered",                     color: "text-green-600 bg-green-50" },
-  CANCELLED:        { label: "Cancelled",                     color: "text-red-600 bg-red-50" },
+  PENDING_DEPOSIT:  { label: "Awaiting deposit",              color: "text-yellow-700 bg-yellow-50 border-yellow-200/30" },
+  AWAITING_BALANCE: { label: "Deposit paid — balance due",    color: "text-blue-700 bg-blue-50 border-blue-200/30" },
+  IN_PRODUCTION:    { label: "In production",                 color: "text-purple-700 bg-purple-50 border-purple-200/30" },
+  SHIPPED:          { label: "Shipped",                       color: "text-indigo-700 bg-indigo-50 border-indigo-200/30" },
+  DELIVERED:        { label: "Delivered",                     color: "text-green-700 bg-green-50 border-green-200/30" },
+  CANCELLED:        { label: "Cancelled",                     color: "text-red-700 bg-red-50 border-red-200/30" },
 };
 
 export default async function OrderDetailPage({
@@ -51,41 +48,43 @@ export default async function OrderDetailPage({
   const isEquipmentOrder = order.items.some((i) => i.depositPercent !== null);
 
   return (
-    <div>
+    <div className="max-w-3xl mx-auto space-y-6">
       {/* Success banner */}
       {success && (
-  <>
-    <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-800 rounded-lg px-4 py-3 mb-6 text-sm">
-      <CheckCircle2 size={16} />
-      Payment confirmed — your order is being processed.
-    </div>
-    {/* Clear the right cart based on order type */}
-    <CartClearer type={isEquipmentOrder ? "equipment" : "packaging"} />
-  </>
-)}
-      
+        <>
+          <div className="flex items-center gap-2.5 bg-green-50 border border-green-200/60 text-green-800 rounded-xl px-4 py-3.5 text-xs font-semibold">
+            <CheckCircle2 size={16} className="text-green-600 shrink-0" />
+            Payment confirmed — your order is being processed.
+          </div>
+          <CartClearer type={isEquipmentOrder ? "equipment" : "packaging"} />
+        </>
+      )}
 
-      <div className="flex items-start justify-between mb-6">
+      {/* Header Info */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-gray-100 pb-5">
         <div>
-          <h1 className="font-display font-semibold text-2xl text-char mb-1">
+          <h1 className="font-display font-semibold text-2xl text-char tracking-tight">
             Order #{order.id.slice(-8).toUpperCase()}
           </h1>
-          <p className="text-sm text-ash">
+          <p className="text-xs text-ash font-medium mt-1">
             Placed{" "}
             {new Date(order.createdAt).toLocaleDateString("en-US", {
               month: "long", day: "numeric", year: "numeric",
             })}
           </p>
         </div>
-        <span className="text-xs uppercase tracking-wide bg-steam text-ash px-3 py-1.5 rounded-md">
+        <span className="text-[10px] font-bold uppercase tracking-wider bg-steam border border-gray-250/50 text-char px-3 py-1.5 rounded-lg self-start sm:self-auto">
           {order.status.replace(/_/g, " ")}
         </span>
       </div>
 
-      {/* Items */}
-      <Card className="p-5 mb-6">
-        <p className="text-xs uppercase tracking-wide text-ash mb-4">Items</p>
-        <div className="space-y-4">
+      {/* Item Summary Card */}
+      <Card className="p-6 border-gray-150 shadow-[0_1px_3px_rgba(0,0,0,0.01)] rounded-2xl bg-white space-y-4">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-ash">
+          Line items
+        </p>
+        
+        <div className="divide-y divide-gray-100">
           {order.items.map((item) => {
             const isEquipment = item.depositPercent !== null;
             const statusInfo = item.itemStatus
@@ -95,80 +94,87 @@ export default async function OrderDetailPage({
               ? Math.round((item.unitPriceCents * (item.depositPercent ?? 0)) / 100)
               : null;
 
-              const depositPercent = item.depositPercent ?? 0;
-const depositPaid = depositPercent > 0
-  ? Math.round((item.unitPriceCents * depositPercent) / 100) * item.quantity
-  : null;
-const balanceOwed = depositPaid !== null
-  ? (item.unitPriceCents * item.quantity) - depositPaid
-  : null;
+            const depositPercent = item.depositPercent ?? 0;
+            const depositPaid = depositPercent > 0
+              ? Math.round((item.unitPriceCents * depositPercent) / 100) * item.quantity
+              : null;
+            const balanceOwed = depositPaid !== null
+              ? (item.unitPriceCents * item.quantity) - depositPaid
+              : null;
 
             return (
-              <div key={item.id}>
+              <div key={item.id} className="py-4 first:pt-0 last:pb-0 space-y-2">
                 <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-char">
+                  <div className="space-y-1">
+                    <p className="text-sm font-bold text-char leading-snug">
                       {item.product.name}
-                      <span className="text-ash font-normal"> × {item.quantity}</span>
+                      <span className="text-ash font-medium"> × {item.quantity}</span>
                     </p>
+                    
                     {isEquipment && statusInfo && (
-                      <p className={`text-xs mt-0.5 ${statusInfo.color}`}>
+                      <span className={`inline-block text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md border ${statusInfo.color}`}>
                         {statusInfo.label}
-                      </p>
+                      </span>
                     )}
+
                     {item.estimatedShipDate && (
-                      <p className="text-xs text-ash flex items-center gap-1 mt-0.5">
-                        <Clock size={11} />
-                        Est. ship:{" "}
+                      <p className="text-[11px] text-ash font-medium flex items-center gap-1">
+                        <Clock size={12} className="text-[#B5481F]" />
+                        Est. dispatch:{" "}
                         {new Date(item.estimatedShipDate).toLocaleDateString()}
                       </p>
                     )}
                   </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-sm text-char">
-                      ${((item.unitPriceCents * item.quantity) / 100).toFixed(2)}
+                  
+                  <div className="text-right shrink-0 space-y-0.5">
+                    <p className="text-sm font-bold text-char">
+                      ${((item.unitPriceCents * item.quantity) / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </p>
-                    {isEquipment && deposit !== null && (
-                      <p className="text-xs text-ash">
-                        ${((deposit * item.quantity) / 100).toFixed(2)} deposit paid
-                      </p>
-                    )}
+                    
                     {depositPaid !== null && (
-  <p className="text-xs text-ash">
-    ${(depositPaid / 100).toFixed(2)} deposit paid
-    {item.itemStatus === "AWAITING_BALANCE" && balanceOwed && (
-      <span className="text-blue-600"> · ${(balanceOwed / 100).toFixed(2)} balance due</span>
-    )}
-  </p>
-)}
+                      <div className="text-[11px] font-medium text-ash">
+                        <p>${(depositPaid / 100).toFixed(2)} deposit paid</p>
+                        {item.itemStatus === "AWAITING_BALANCE" && balanceOwed && (
+                          <p className="text-[#B5481F] font-semibold">
+                            ${(balanceOwed / 100).toFixed(2)} balance due
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
             );
           })}
         </div>
-        <Separator className="my-4" />
-        <div className="flex justify-between text-sm font-semibold text-char">
-          <span>{isEquipmentOrder ? "Total equipment value" : "Total"}</span>
-          <span>${(total / 100).toFixed(2)}</span>
+
+        <Separator className="border-gray-100" />
+        
+        <div className="flex justify-between items-center text-sm font-bold text-char pt-1">
+          <span>{isEquipmentOrder ? "Total Equipment Value" : "Amount Paid"}</span>
+          <span className="text-base text-[#B5481F] font-display">
+            ${(total / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </span>
         </div>
       </Card>
 
-
+      {/* Financial documents and tools panel */}
       {(order.status === "PAID" ||
-  order.status === "IN_PRODUCTION" ||
-  order.status === "SHIPPED" ||
-  order.status === "DELIVERED") && (
-  <InvoiceButton orderId={order.id} />
-)}
+        order.status === "IN_PRODUCTION" ||
+        order.status === "SHIPPED" ||
+        order.status === "DELIVERED") && (
+        <div className="flex justify-start">
+          <InvoiceButton orderId={order.id} />
+        </div>
+      )}
 
-      {/* Shipping address */}
+      {/* Shipping Address */}
       {order.shippingAddress && (
-        <Card className="p-5">
-          <p className="text-xs uppercase tracking-wide text-ash mb-3 flex items-center gap-1.5">
-            <Package size={12} /> Shipping to
+        <Card className="p-6 border-gray-150 shadow-[0_1px_3px_rgba(0,0,0,0.01)] rounded-2xl bg-white space-y-3">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-ash flex items-center gap-1.5">
+            <Package size={13} className="text-[#B5481F]" /> Shipping Location
           </p>
-          <p className="text-sm text-char leading-relaxed">
+          <p className="text-xs font-semibold text-char leading-relaxed">
             {order.shippingAddress.line1}
             {order.shippingAddress.line2
               ? `, ${order.shippingAddress.line2}`

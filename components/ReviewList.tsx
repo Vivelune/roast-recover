@@ -14,24 +14,26 @@ type Review = {
 export default function ReviewList({ reviews }: { reviews: Review[] }) {
   if (reviews.length === 0) {
     return (
-      <p className="text-ash text-sm py-8 text-center">
-        No reviews yet — be the first to share your experience.
-      </p>
+      <div className="text-center py-10 border border-dashed border-gray-200 rounded-2xl bg-steam/5">
+        <p className="text-ash text-sm">
+          No reviews yet — be the first to share your experience with this equipment.
+        </p>
+      </div>
     );
   }
 
   return (
     <div className="space-y-6">
       {reviews.map((r) => (
-        <div key={r.id} className="border-b border-border pb-6 last:border-0 last:pb-0">
-          <div className="flex items-start justify-between gap-4 mb-2">
+        <div key={r.id} className="border-b border-gray-150 pb-6 last:border-0 last:pb-0">
+          <div className="flex items-start justify-between gap-4 mb-3">
             <div>
-              <StarDisplay rating={r.rating} size={14} />
+              <StarDisplay rating={r.rating} size={12} />
               {r.title && (
-                <p className="font-medium text-char text-sm mt-1">{r.title}</p>
+                <p className="font-semibold text-char text-sm mt-1">{r.title}</p>
               )}
             </div>
-            <p className="text-xs text-ash flex-shrink-0">
+            <p className="text-xs text-ash font-medium">
               {new Date(r.createdAt).toLocaleDateString("en-US", {
                 month: "short",
                 day: "numeric",
@@ -39,15 +41,15 @@ export default function ReviewList({ reviews }: { reviews: Review[] }) {
               })}
             </p>
           </div>
-          <p className="text-sm text-ash leading-relaxed mb-2">{r.body}</p>
+          <p className="text-sm text-ash leading-relaxed mb-3">{r.body}</p>
           <div className="flex items-center gap-3">
-            <p className="text-xs text-ash">
+            <p className="text-xs text-char font-semibold">
               {r.user.name ?? r.user.email.split("@")[0]}
             </p>
             {r.verified && (
-              <span className="flex items-center gap-1 text-xs text-green-700 bg-green-50 px-2 py-0.5 rounded-full">
-                <ShieldCheck size={11} />
-                Verified purchase
+              <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-green-700 bg-green-50 border border-green-100 px-2 py-0.5 rounded">
+                <ShieldCheck size={11} className="stroke-[2.5]" />
+                Verified Purchase
               </span>
             )}
           </div>

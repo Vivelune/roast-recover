@@ -64,34 +64,41 @@ export default async function AccountPage() {
   const defaultAddress = user.addresses?.[0] ?? null;
 
   return (
-    <div>
+    <div className="space-y-6 sm:space-y-8">
       {!onboarding.completedAt && (
-      <OnboardingChecklist progress={onboarding} />
-    )}
-      <h1 className="font-display font-semibold text-2xl text-char mb-1">
-        Welcome back
-        {user.name ? `, ${user.name.split(" ")[0]}` : ""}
-      </h1>
-      <p className="text-ash text-sm mb-8">{user.email}</p>
+        <OnboardingChecklist progress={onboarding} />
+      )}
+      
+      {/* Header Info */}
+      <div>
+        <h1 className="font-display font-semibold text-2xl sm:text-3xl text-char tracking-tight mb-1">
+          Welcome back
+          {user.name ? `, ${user.name.split(" ")[0]}` : ""}
+        </h1>
+        <p className="text-ash text-xs sm:text-sm">{user.email}</p>
+      </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-10">
+      {/* Stats - Responsive Grid (1 column on mobile, 3 on tablet/desktop) */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {stats.map(({ label, value, icon: Icon, href }) => (
-          <Link key={label} href={href}>
-            <Card className="p-4 hover:border-ember/40 transition-colors">
-              <div className="flex items-center justify-between mb-3">
-                <Icon size={16} className="text-ash" />
-                <ArrowRight size={13} className="text-ash" />
+          <Link key={label} href={href} className="group block">
+            <Card className="p-5 border-gray-150 group-hover:border-ember/40 hover:shadow-[0_4px_20px_rgba(0,0,0,0.02)] active:scale-[0.99] transition-all duration-200 rounded-xl h-full flex flex-col justify-between">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-2 bg-steam/40 rounded-lg text-ash group-hover:text-ember group-hover:bg-steam/80 transition-colors">
+                  <Icon size={18} />
+                </div>
+                <ArrowRight size={14} className="text-ash/40 group-hover:text-ember group-hover:translate-x-0.5 transition-all" />
               </div>
-              <p className="font-display font-semibold text-2xl text-char">
-                {value}
-              </p>
-              <p className="text-xs text-ash mt-0.5">{label}</p>
+              <div>
+                <p className="font-display font-semibold text-2xl sm:text-3xl text-char tracking-tight">
+                  {value}
+                </p>
+                <p className="text-xs text-ash mt-1 font-medium">{label}</p>
+              </div>
             </Card>
           </Link>
         ))}
       </div>
-
 
       <ReorderWidget
   insights={reorderInsights}

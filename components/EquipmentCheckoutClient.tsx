@@ -1,4 +1,5 @@
 "use client";
+
 import { useEquipmentCart } from "@/lib/equipment-cart-store";
 import { createEquipmentOrderCheckout } from "@/app/actions/equipment-checkout";
 import { createAddress } from "@/app/actions/addresses";
@@ -6,7 +7,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   MapPin, Loader2, ShieldCheck,
-  AlertCircle, ArrowLeft, Lock, Plus,
+  AlertCircle, ArrowLeft, Lock, Plus, Check
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -24,7 +25,7 @@ type Address = {
   city: string;
   state: string;
   zip: string;
-  country: string
+  country: string;
 };
 
 export default function EquipmentCheckoutClient({
@@ -42,6 +43,11 @@ export default function EquipmentCheckoutClient({
   const totalDeposit = items.reduce(
     (sum, i) =>
       sum + Math.round((i.priceCents * i.depositPercent) / 100) * i.quantity,
+    0
+  );
+
+  const totalValue = items.reduce(
+    (sum, i) => sum + i.priceCents * i.quantity,
     0
   );
 
@@ -66,9 +72,9 @@ export default function EquipmentCheckoutClient({
 
   if (items.length === 0) {
     return (
-      <div className="max-w-md mx-auto px-8 py-24 text-center">
+      <div className="max-w-md mx-auto px-6 py-24 text-center">
         <p className="text-ash mb-4">No equipment in your order.</p>
-        <Link href="/equipment" className="text-ember font-medium text-sm">
+        <Link href="/equipment" className="text-ember font-bold text-sm hover:underline">
           Browse equipment →
         </Link>
       </div>
@@ -76,151 +82,189 @@ export default function EquipmentCheckoutClient({
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-8 py-16">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 space-y-10">
+      {/* Back Button */}
       <Link
         href="/equipment/cart"
-        className="inline-flex items-center gap-1.5 text-sm text-ash hover:text-char transition-colors mb-8"
+        className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-ash hover:text-char transition-colors"
       >
-        <ArrowLeft size={14} /> Back to equipment order
+        <ArrowLeft size={13} /> Back to cart
       </Link>
 
-      <h1 className="font-display font-semibold text-2xl text-char mb-2">
-        Equipment checkout — deposit
-      </h1>
-      <CheckoutSteps current={step} />
+      {/* Header & Progress Indicator */}
+      <div className="space-y-6">
+        <h1 className="font-display font-semibold text-2xl sm:text-3xl text-char tracking-tight">
+          Equipment Checkout
+        </h1>
+        <CheckoutSteps current={step} />
+      </div>
 
-      <div className="grid md:grid-cols-[1fr_340px] gap-10">
-        <div>
-          <p className="text-xs uppercase tracking-wide text-ash mb-4 flex items-center gap-2">
-            <MapPin size={13} /> Shipping address
-          </p>
+      {/* Responsive Stacking Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8 lg:gap-14 items-start">
+        
+        {/* Main Content: Shipping Address Selector */}
+        <div className="space-y-8">
+          <div className="space-y-4">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-ash flex items-center gap-2 tracking-widest">
+              <MapPin size={14} className="text-char" /> 1. Shipping Address
+            </h2>
 
-          {!showForm && addresses.length > 0 && (
-            <div className="space-y-2.5">
-              <RadioGroup
-                value={selectedId}
-                onValueChange={setSelectedId}
-                className="space-y-2.5"
-              >
-                {addresses.map((addr) => (
-                  <label
-                    key={addr.id}
-                    htmlFor={`eq-${addr.id}`}
-                    className={`flex items-start gap-3 p-4 border rounded-lg cursor-pointer transition-all ${
-                      selectedId === addr.id
-                        ? "border-ember bg-steam/40 ring-1 ring-ember/20"
-                        : "border-border hover:border-ash/40"
-                    }`}
-                  >
-                    <RadioGroupItem
-                      value={addr.id}
-                      id={`eq-${addr.id}`}
-                      className="mt-0.5"
-                    />
-                    <span className="text-sm text-char leading-relaxed">
-                      {addr.line1}
-                      {addr.line2 ? `, ${addr.line2}` : ""}
-                      <br />
-                      {addr.city}, {addr.state} {addr.zip}
-                      <br/>
-                      {addr.country}
-                    </span>
-                  </label>
-                ))}
-              </RadioGroup>
-              <button
-                onClick={() => setShowForm(true)}
-                className="flex items-center gap-1.5 text-sm text-ember font-medium mt-1"
-              >
-                <Plus size={13} /> Add a new address
-              </button>
-            </div>
-          )}
+            {!showForm && addresses.length > 0 && (
+              <div className="space-y-4">
+                <RadioGroup
+                  value={selectedId}
+                  onValueChange={setSelectedId}
+                  className="grid grid-cols-1 gap-3"
+                >
+                  {addresses.map((addr) => {
+                    const isSelected = selectedId === addr.id;
+                    return (
+                      <label
+                        key={addr.id}
+                        htmlFor={`eq-${addr.id}`}
+                        className={`relative flex items-start gap-4 p-5 border rounded-2xl cursor-pointer select-none transition-all ${
+                          isSelected
+                            ? "border-char bg-[#FBFBFA] shadow-[0_1px_3px_rgba(0,0,0,0.02)]"
+                            : "border-gray-150 hover:border-gray-200 bg-white"
+                        }`}
+                      >
+                        <RadioGroupItem
+                          value={addr.id}
+                          id={`eq-${addr.id}`}
+                          className="mt-1 accent-char"
+                        />
+                        <div className="space-y-1">
+                          <span className="block text-sm font-semibold text-char leading-tight">
+                            {addr.line1}
+                          </span>
+                          {addr.line2 && (
+                            <span className="block text-xs text-ash leading-none">
+                              {addr.line2}
+                            </span>
+                          )}
+                          <span className="block text-xs text-ash leading-relaxed">
+                            {addr.city}, {addr.state} {addr.zip}
+                          </span>
+                          <span className="block text-[10px] font-bold text-ash uppercase tracking-wider pt-1">
+                            {addr.country || "United States"}
+                          </span>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </RadioGroup>
 
-          {showForm && (
-            <AddressForm
-              onSaved={(id) => {
-                setSelectedId(id);
-                setShowForm(false);
-                router.refresh();
-              }}
-              onCancel={
-                addresses.length > 0 ? () => setShowForm(false) : undefined
-              }
-            />
-          )}
+                <button
+                  onClick={() => setShowForm(true)}
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-ember hover:text-ember-dark transition-colors uppercase tracking-wider mt-1"
+                >
+                  <Plus size={13} /> Add a new address
+                </button>
+              </div>
+            )}
+
+            {showForm && (
+              <AddressForm
+                onSaved={(id) => {
+                  setSelectedId(id);
+                  setShowForm(false);
+                  router.refresh();
+                }}
+                onCancel={
+                  addresses.length > 0 ? () => setShowForm(false) : undefined
+                }
+              />
+            )}
+          </div>
 
           {error && (
-            <div className="flex items-center gap-2 text-sm text-red-700 bg-red-50 border border-red-100 rounded-md px-4 py-3 mt-5">
-              <AlertCircle size={14} /> {error}
+            <div className="flex items-start gap-3 text-xs font-medium text-red-700 bg-red-50 border border-red-100 rounded-xl px-4 py-3.5">
+              <AlertCircle size={15} className="shrink-0 mt-0.5" />
+              <p>{error}</p>
             </div>
           )}
 
-          <Button
-            onClick={handlePay}
-            disabled={loading || !selectedId || showForm}
-            className="w-full bg-ember text-white hover:bg-ember-dark disabled:opacity-50 h-12 text-sm font-medium mt-8"
-          >
-            {loading ? (
-              <><Loader2 size={15} className="animate-spin mr-2" />Redirecting...</>
-            ) : (
-              <><Lock size={14} className="mr-2" />Pay ${(totalDeposit / 100).toFixed(2)} deposit</>
-            )}
-          </Button>
-          <p className="text-xs text-ash text-center mt-2">
-            Each machine's balance is invoiced separately once it's ready. You won't be charged the full amount now.
-          </p>
+          {/* Action Trigger Box */}
+          <div className="space-y-3 pt-4 border-t border-gray-150">
+            <Button
+              onClick={handlePay}
+              disabled={loading || !selectedId || showForm}
+              className="w-full bg-char hover:bg-char/90 text-white disabled:opacity-50 h-13 rounded-xl text-xs font-bold uppercase tracking-wider shadow-sm transition-all"
+            >
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 size={14} className="animate-spin" /> Redirecting to Stripe...
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <Lock size={13} /> Securely Pay ${(totalDeposit / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })} Deposit
+                </span>
+              )}
+            </Button>
+            <p className="text-[11px] text-ash text-center leading-normal max-w-md mx-auto">
+              Remaining sourcing and import balances are calculated and invoiced individually when each machine is fully staged for local transit.
+            </p>
+          </div>
         </div>
 
-        {/* Summary */}
-        <div className="md:sticky md:top-24 self-start">
-          <Card className="p-5">
-            <p className="text-xs uppercase tracking-wide text-ash mb-4">
-              Order summary
+        {/* Sidebar Summary Panel */}
+        <div className="lg:sticky lg:top-24 self-start">
+          <Card className="p-6 border-gray-150 shadow-[0_1px_3px_rgba(0,0,0,0.01)] bg-[#FBFBFA] rounded-2xl space-y-5">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-ash tracking-widest border-b border-gray-200/60 pb-3">
+              Order Summary
             </p>
-            <div className="space-y-3">
+            
+            <div className="space-y-3.5 max-h-60 overflow-y-auto no-scrollbar">
               {items.map((item) => {
                 const deposit = Math.round(
                   (item.priceCents * item.depositPercent) / 100
                 );
                 return (
-                  <div key={item.productId} className="flex justify-between text-sm">
-                    <span className="text-char">
-                      {item.name}{" "}
-                      <span className="text-ash">× {item.quantity}</span>
-                    </span>
-                    <span className="text-char">
-                      ${((deposit * item.quantity) / 100).toFixed(2)}
+                  <div key={item.productId} className="flex justify-between items-baseline gap-4 text-xs sm:text-sm">
+                    <div className="min-w-0">
+                      <p className="text-char font-semibold truncate leading-tight">{item.name}</p>
+                      <p className="text-xs text-ash mt-0.5">Qty: {item.quantity}</p>
+                    </div>
+                    <span className="text-char font-medium whitespace-nowrap">
+                      ${((deposit * item.quantity) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                 );
               })}
             </div>
-            <Separator className="my-4" />
-            <div className="space-y-1.5 mb-5">
-              <div className="flex justify-between text-sm text-ash">
-                <span>Total equipment value</span>
-                <span>
-                  $
-                  {(
-                    items.reduce(
-                      (sum, i) => sum + i.priceCents * i.quantity,
-                      0
-                    ) / 100
-                  ).toFixed(2)}
+
+            <Separator className="border-gray-200/60" />
+
+            <div className="space-y-2">
+              <div className="flex justify-between items-center text-xs text-ash">
+                <span>Total Equipment Value</span>
+                <span className="font-medium text-char">
+                  ${(totalValue / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                 </span>
               </div>
-              <div className="flex justify-between font-semibold text-char">
-                <span>Deposit due today</span>
-                <span>${(totalDeposit / 100).toFixed(2)}</span>
+              
+              <div className="flex justify-between items-center text-xs text-ash pb-2 border-b border-gray-200/50">
+                <span>Remaining Balances</span>
+                <span className="font-medium text-char">
+                  ${((totalValue - totalDeposit) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-baseline pt-2">
+                <span className="text-xs font-bold text-char uppercase tracking-wider">Deposit Due Today</span>
+                <span className="text-lg font-bold text-char">
+                  ${(totalDeposit / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                </span>
               </div>
             </div>
-            <div className="flex items-center gap-2 text-xs text-ash">
-              <ShieldCheck size={13} className="text-ember" />
-              Secure checkout powered by Stripe
+
+            <div className="flex items-center gap-2 text-[10px] text-ash font-medium border-t border-gray-200/60 pt-3">
+              <ShieldCheck size={14} className="text-emerald-600 shrink-0" />
+              <span>Checkout process encrypted by Stripe</span>
             </div>
           </Card>
         </div>
+
       </div>
     </div>
   );
@@ -234,7 +278,12 @@ function AddressForm({
   onCancel?: () => void;
 }) {
   const [form, setForm] = useState({
-    line1: "", line2: "", city: "", state: "", zip: "",country: "",
+    line1: "",
+    line2: "",
+    city: "",
+    state: "",
+    zip: "",
+    country: "",
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -254,63 +303,91 @@ function AddressForm({
   }
 
   return (
-    <Card className="p-5">
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <Input required placeholder="Address line 1" value={form.line1}
-          onChange={(e) => setForm({ ...form, line1: e.target.value })} />
-        <Input placeholder="Address line 2 (optional)" value={form.line2}
-          onChange={(e) => setForm({ ...form, line2: e.target.value })} />
-        <div className="grid grid-cols-3 gap-3">
-  <Input
-    required
-    placeholder="City"
-    value={form.city}
-    onChange={(e) => setForm({ ...form, city: e.target.value })}
-  />
+    <Card className="p-5 border-gray-150 shadow-[0_1px_3px_rgba(0,0,0,0.01)] rounded-2xl bg-white">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-char tracking-widest">
+          New Shipping Destination
+        </p>
+        
+        <div className="space-y-3">
+          <Input
+            required
+            placeholder="Address Line 1"
+            value={form.line1}
+            onChange={(e) => setForm({ ...form, line1: e.target.value })}
+            className="rounded-xl border-gray-150 focus-visible:ring-char"
+          />
+          <Input
+            placeholder="Address Line 2 (Optional)"
+            value={form.line2}
+            onChange={(e) => setForm({ ...form, line2: e.target.value })}
+            className="rounded-xl border-gray-150 focus-visible:ring-char"
+          />
+          
+          <div className="grid grid-cols-3 gap-3">
+            <Input
+              required
+              placeholder="City"
+              value={form.city}
+              onChange={(e) => setForm({ ...form, city: e.target.value })}
+              className="rounded-xl border-gray-150 focus-visible:ring-char"
+            />
+            <Input
+              required
+              placeholder="State"
+              value={form.state}
+              onChange={(e) => setForm({ ...form, state: e.target.value })}
+              className="rounded-xl border-gray-150 focus-visible:ring-char"
+            />
+            <Input
+              required
+              placeholder="ZIP"
+              value={form.zip}
+              onChange={(e) => setForm({ ...form, zip: e.target.value })}
+              className="rounded-xl border-gray-150 focus-visible:ring-char"
+            />
+          </div>
 
-  <Input
-    required
-    placeholder="State"
-    value={form.state}
-    onChange={(e) => setForm({ ...form, state: e.target.value })}
-  />
+          <div className="space-y-1.5 pt-1">
+            <Label htmlFor="country" className="text-xs font-semibold text-char">
+              Country
+            </Label>
+            <Input
+              id="country"
+              placeholder="e.g. United States, United Arab Emirates, United Kingdom"
+              value={form.country}
+              onChange={(e) => setForm({ ...form, country: e.target.value })}
+              className="rounded-xl border-gray-150 focus-visible:ring-char"
+            />
+            <p className="text-[10px] text-ash">
+              Leave blank to default to United States.
+            </p>
+          </div>
+        </div>
 
-  <Input
-    required
-    placeholder="ZIP"
-    value={form.zip}
-    onChange={(e) => setForm({ ...form, zip: e.target.value })}
-  />
-</div>
-
-<div className="space-y-1.5">
-  <Label htmlFor="country">Country</Label>
-  <Input
-    id="country"
-    placeholder="e.g. United States, UAE, UK"
-    value={form.country}
-    onChange={(e) =>
-      setForm({
-        ...form,
-        country: e.target.value,
-      })
-    }
-  />
-  <p className="text-xs text-ash">
-    Leave blank to default to United States.
-  </p>
-</div>
         {error && (
-          <div className="flex items-center gap-2 text-sm text-red-700 bg-red-50 border border-red-100 rounded-md px-3 py-2.5">
-            <AlertCircle size={13} /> {error}
+          <div className="flex items-center gap-2 text-xs font-medium text-red-700 bg-red-50 border border-red-100 rounded-xl px-3 py-2.5">
+            <AlertCircle size={14} className="shrink-0" /> {error}
           </div>
         )}
-        <div className="flex gap-3 pt-1">
-          <Button type="submit" disabled={saving}>
-            {saving ? "Saving..." : "Save address"}
+
+        <div className="flex gap-2 pt-2 border-t border-gray-100">
+          <Button
+            type="submit"
+            disabled={saving}
+            className="bg-char hover:bg-char/90 text-white text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-xl"
+          >
+            {saving ? "Saving..." : "Save Address"}
           </Button>
           {onCancel && (
-            <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={onCancel}
+              className="text-xs font-bold uppercase tracking-wider hover:bg-steam px-4 py-2 rounded-xl text-ash"
+            >
+              Cancel
+            </Button>
           )}
         </div>
       </form>

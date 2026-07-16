@@ -46,9 +46,12 @@ export default function ReviewForm({
 
   if (success) {
     return (
-      <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-800 rounded-lg px-4 py-3 text-sm">
-        <CheckCircle2 size={16} />
-        Review submitted — thank you!
+      <div className="flex items-start gap-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl px-4 py-3.5 text-xs font-semibold leading-normal">
+        <CheckCircle2 size={16} className="text-emerald-600 flex-shrink-0 mt-0.5" />
+        <div>
+          <p className="font-bold">Review submitted!</p>
+          <p className="font-normal text-[11px] text-emerald-700/90 mt-0.5">Thank you for helping other café operators.</p>
+        </div>
       </div>
     );
   }
@@ -56,51 +59,54 @@ export default function ReviewForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <Label className="mb-2 block">Your rating</Label>
+        <Label className="mb-2 block text-xs font-bold uppercase tracking-wider text-char">Your rating</Label>
         <StarPicker value={rating} onChange={setRating} />
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="review-title">Title (optional)</Label>
+        <Label htmlFor="review-title" className="text-xs font-semibold text-char">Title (optional)</Label>
         <Input
           id="review-title"
-          placeholder="Summarise your experience..."
+          placeholder="Summarize your experience..."
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           maxLength={100}
+          className="h-10 border-gray-200 focus-visible:ring-ember bg-white text-char placeholder:text-ash text-xs"
         />
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="review-body">Review</Label>
+        <Label htmlFor="review-body" className="text-xs font-semibold text-char">Review description</Label>
         <Textarea
           id="review-body"
           required
-          placeholder="Tell other café operators what you think..."
+          placeholder="What should other café operators know about this model?"
           value={body}
           onChange={(e) => setBody(e.target.value)}
           rows={4}
           maxLength={1000}
+          className="border-gray-200 focus-visible:ring-ember bg-white text-char text-xs"
         />
-        <p className="text-xs text-ash text-right">{body.length}/1000</p>
+        <p className="text-[10px] text-ash text-right">{body.length}/1000</p>
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 text-sm text-red-700 bg-red-50 border border-red-100 rounded-md px-3 py-2.5">
-          <AlertCircle size={13} /> {error}
+        <div className="flex items-center gap-2 text-xs text-red-700 bg-red-50 border border-red-100 rounded-xl px-3.5 py-3">
+          <AlertCircle size={14} className="text-red-600 flex-shrink-0" />
+          <span className="font-semibold">{error}</span>
         </div>
       )}
 
       <Button
         type="submit"
         disabled={loading}
-        className="bg-ember hover:bg-ember-dark"
+        className="w-full text-white bg-ember hover:bg-ember-dark h-10 text-xs uppercase tracking-wider font-bold transition-all rounded-xl"
       >
         {loading
           ? "Submitting..."
           : existingReview
-          ? "Update review"
-          : "Submit review"}
+          ? "Update Review"
+          : "Submit Review"}
       </Button>
     </form>
   );

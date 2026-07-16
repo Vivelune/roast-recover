@@ -6,9 +6,10 @@ import {
 } from "@tanstack/react-table";
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowUpDown, ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
 
 type CustomerRow = {
   id: string;
@@ -28,7 +29,7 @@ const columns: ColumnDef<CustomerRow>[] = [
     cell: ({ row }) => (
       <Link
         href={`/admin/customers/${row.original.id}`}
-        className="text-ember hover:underline"
+        className="text-ember hover:underline font-semibold text-char hover:text-ember transition-colors"
       >
         {row.getValue("email")}
       </Link>
@@ -38,7 +39,7 @@ const columns: ColumnDef<CustomerRow>[] = [
     accessorKey: "name",
     header: "Name",
     cell: ({ row }) => row.getValue("name") ?? (
-      <span className="text-ash">—</span>
+      <span className="text-ash italic font-normal text-xs">No name provided</span>
     ),
   },
   {
@@ -46,34 +47,47 @@ const columns: ColumnDef<CustomerRow>[] = [
     header: ({ column }) => (
       <button
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        className="flex items-center gap-1 text-xs uppercase tracking-wide text-ash hover:text-char"
+        className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-ash hover:text-char transition-colors group"
       >
-        Orders <ArrowUpDown size={12} />
+        Orders <ArrowUpDown size={11} className="text-gray-300 group-hover:text-char transition-colors" />
       </button>
     ),
-    cell: ({ row }) => row.getValue("orderCount"),
+    cell: ({ row }) => (
+      <span className="font-semibold text-char">{row.getValue("orderCount")}</span>
+    ),
   },
   {
     accessorKey: "totalSpend",
     header: ({ column }) => (
       <button
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        className="flex items-center gap-1 text-xs uppercase tracking-wide text-ash hover:text-char"
+        className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-ash hover:text-char transition-colors group"
       >
-        Total spend <ArrowUpDown size={12} />
+        Total Spend <ArrowUpDown size={11} className="text-gray-300 group-hover:text-char transition-colors" />
       </button>
     ),
-    cell: ({ row }) =>
-      `$${((row.getValue("totalSpend") as number) / 100).toFixed(2)}`,
+    cell: ({ row }) => (
+      <span className="font-semibold text-char">
+        {`$${((row.getValue("totalSpend") as number) / 100).toFixed(2)}`}
+      </span>
+    ),
   },
   {
     accessorKey: "lastOrderDate",
-    header: "Last order",
+    header: "Last Order",
     cell: ({ row }) => {
       const date = row.getValue("lastOrderDate") as string | null;
-      return date
-        ? new Date(date).toLocaleDateString()
-        : <span className="text-ash">—</span>;
+      return date ? (
+        <span className="font-medium text-char">
+          {new Date(date).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })}
+        </span>
+      ) : (
+        <span className="text-ash text-xs">—</span>
+      );
     },
   },
   {
@@ -81,10 +95,10 @@ const columns: ColumnDef<CustomerRow>[] = [
     header: "Role",
     cell: ({ row }) => (
       <span
-        className={`text-xs px-2 py-0.5 rounded ${
+        className={`inline-flex items-center rounded-lg px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider border ${
           row.getValue("role") === "ADMIN"
-            ? "bg-ember/10 text-ember"
-            : "bg-steam text-ash"
+            ? "bg-amber-50 text-amber-700 border-amber-200"
+            : "bg-steam text-ash border-gray-200/40"
         }`}
       >
         {row.getValue("role")}
@@ -94,8 +108,15 @@ const columns: ColumnDef<CustomerRow>[] = [
   {
     accessorKey: "createdAt",
     header: "Joined",
-    cell: ({ row }) =>
-      new Date(row.getValue("createdAt")).toLocaleDateString(),
+    cell: ({ row }) => (
+      <span className="text-ash font-medium text-xs">
+        {new Date(row.getValue("createdAt")).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })}
+      </span>
+    ),
   },
 ];
 
@@ -117,78 +138,93 @@ export default function CustomersTable({ data }: { data: CustomerRow[] }) {
   });
 
   return (
-    <div>
-      <div className="flex items-center gap-3 mb-4">
+    <div className="space-y-6">
+      {/* Table Filter Control */}
+      <div className="relative max-w-sm">
+        <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-ash">
+          <Search size={16} />
+        </span>
         <Input
-          placeholder="Filter by email..."
+          placeholder="Filter customer accounts..."
           value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
           onChange={(e) =>
             table.getColumn("email")?.setFilterValue(e.target.value)
           }
-          className="max-w-xs"
+          className="pl-10 rounded-xl border-gray-150 focus-visible:ring-char text-xs font-semibold placeholder:text-gray-300"
         />
       </div>
 
-      <div className="border border-border rounded-lg overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-steam/40 border-b border-border">
-            {table.getHeaderGroups().map((hg) => (
-              <tr key={hg.id}>
-                {hg.headers.map((header) => (
-                  <th key={header.id} className="text-left px-4 py-3 text-xs font-medium text-ash">
-                    {flexRender(header.column.columnDef.header, header.getContext())}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody>
-            {table.getRowModel().rows.length === 0 ? (
-              <tr>
-                <td colSpan={columns.length} className="px-4 py-8 text-center text-ash text-sm">
-                  No customers yet.
-                </td>
-              </tr>
-            ) : (
-              table.getRowModel().rows.map((row) => (
-                <tr key={row.id} className="border-b border-border/50 last:border-0 hover:bg-steam/20">
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="px-4 py-3 text-char">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
+      {/* Styled Table Canvas */}
+      <Card className="overflow-hidden border-gray-150 shadow-[0_1px_3px_rgba(0,0,0,0.01)] bg-white rounded-2xl">
+        <div className="w-full overflow-x-auto no-scrollbar">
+          <table className="w-full text-sm min-w-[800px]">
+            <thead className="bg-[#FBFBFA] border-b border-gray-150">
+              {table.getHeaderGroups().map((hg) => (
+                <tr key={hg.id}>
+                  {hg.headers.map((header) => (
+                    <th
+                      key={header.id}
+                      className="text-left px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-ash"
+                    >
+                      {flexRender(header.column.columnDef.header, header.getContext())}
+                    </th>
                   ))}
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ))}
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {table.getRowModel().rows.length === 0 ? (
+                <tr>
+                  <td colSpan={columns.length} className="px-6 py-12 text-center text-ash text-sm font-medium">
+                    No customers registered yet matching query.
+                  </td>
+                </tr>
+              ) : (
+                table.getRowModel().rows.map((row) => (
+                  <tr
+                    key={row.id}
+                    className="hover:bg-steam/30 transition-colors"
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <td key={cell.id} className="px-6 py-4 text-char">
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
 
-      <div className="flex items-center justify-between mt-4 text-sm text-ash">
+      {/* Modern Table Pagination Footnotes */}
+      <div className="flex items-center justify-between px-2 text-xs font-semibold text-ash">
         <p>
-          {table.getFilteredRowModel().rows.length} customer
+          Showing {table.getFilteredRowModel().rows.length} customer
           {table.getFilteredRowModel().rows.length !== 1 ? "s" : ""}
         </p>
-        <div className="flex items-center gap-2">
+        
+        <div className="flex items-center gap-3">
           <Button
             variant="outline"
-            size="sm"
+            className="h-9 w-9 p-0 rounded-xl border-gray-150 hover:bg-steam"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            <ChevronLeft size={14} />
+            <ChevronLeft size={14} className="text-char" />
           </Button>
-          <span>
+          <span className="text-char">
             Page {table.getState().pagination.pageIndex + 1} of{" "}
             {table.getPageCount()}
           </span>
           <Button
             variant="outline"
-            size="sm"
+            className="h-9 w-9 p-0 rounded-xl border-gray-150 hover:bg-steam"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            <ChevronRight size={14} />
+            <ChevronRight size={14} className="text-char" />
           </Button>
         </div>
       </div>

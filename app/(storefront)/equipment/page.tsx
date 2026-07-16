@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import Image from "next/image";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, SlidersHorizontal } from "lucide-react";
 import FadeIn from "@/components/FadeIn";
 import EquipmentFilters from "@/components/EquipmentFilters";
 
@@ -27,7 +27,6 @@ export default async function EquipmentPage({
     orderBy: { createdAt: "asc" },
   });
 
-  // Get ranges for filter UI
   const allProducts = await prisma.product.findMany({
     where: { category: "EQUIPMENT", active: true },
     select: { machineType: true, priceCents: true, leadTimeDays: true },
@@ -38,70 +37,74 @@ export default async function EquipmentPage({
       allProducts.map((p) => p.machineType).filter(Boolean) as string[]
     ),
   ];
-  const maxProductPrice = Math.max(...allProducts.map((p) => p.priceCents));
+  const maxProductPrice = Math.max(...allProducts.map((p) => p.priceCents), 0);
   const maxProductLead = Math.max(
-    ...allProducts.map((p) => p.leadTimeDays ?? 0)
+    ...allProducts.map((p) => p.leadTimeDays ?? 0), 0
   );
 
   const activeFilterCount = [type, maxPrice, maxLeadTime].filter(Boolean).length;
 
   return (
-    <div className="max-w-6xl mx-auto px-8 py-16">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
+      {/* Header section */}
       <FadeIn>
-        <p className="text-xs uppercase tracking-[0.15em] text-ember font-medium mb-3">
-          Equipment
-        </p>
-        <h1 className="font-display font-semibold text-3xl text-char mb-3">
-          Certified machines, sourced direct.
-        </h1>
-        <p className="text-ash text-[15px] mb-8 max-w-md">
-          A deposit secures your order — the rest is due once it's sourced and
-          ready to ship.
-        </p>
+        <div className="mb-10 sm:mb-12">
+          <p className="text-xs uppercase tracking-[0.2em] text-ember font-bold mb-2.5">
+            Equipment Catalog
+          </p>
+          <h1 className="font-display font-semibold text-3xl sm:text-4xl text-char tracking-tight mb-3">
+            Certified machines, sourced direct.
+          </h1>
+          <p className="text-ash text-sm sm:text-base max-w-md leading-relaxed">
+            A deposit secures your order — the balance is due only when your equipment is sourced and ready to ship.
+          </p>
+        </div>
       </FadeIn>
 
-      <div className="flex flex-col md:flex-row gap-8">
-        {/* Sidebar filters */}
-        <aside className="w-full md:w-52 flex-shrink-0">
-          <EquipmentFilters
-            machineTypes={machineTypes}
-            maxProductPrice={maxProductPrice}
-            maxProductLead={maxProductLead}
-            activeType={type}
-            activeMaxPrice={maxPrice}
-            activeMaxLeadTime={maxLeadTime}
-            activeFilterCount={activeFilterCount}
-          />
-        </aside>
+      <div className="flex flex-col lg:flex-row gap-8 items-start">
+        {/* Sidebar and Mobile Trigger wrapper */}
+        <EquipmentFilters
+          machineTypes={machineTypes}
+          maxProductPrice={maxProductPrice}
+          maxProductLead={maxProductLead}
+          activeType={type}
+          activeMaxPrice={maxPrice}
+          activeMaxLeadTime={maxLeadTime}
+          activeFilterCount={activeFilterCount}
+        />
 
-        {/* Product grid */}
-        <div className="flex-1">
+        {/* Product grid container */}
+        <div className="flex-1 w-full">
           {products.length === 0 ? (
-            <div className="text-center py-16">
-              <p className="text-char font-medium mb-2">
+            <div className="text-center py-20 border border-dashed border-gray-200 rounded-2xl bg-steam/5">
+              <p className="text-char font-semibold text-lg mb-1.5">
                 No products match those filters
               </p>
+              <p className="text-ash text-sm mb-5">Try relaxing your price constraints or filter selections.</p>
               <Link
                 href="/equipment"
-                className="text-ember text-sm font-medium"
+                className="inline-flex items-center justify-center px-4 py-2 text-xs font-bold uppercase tracking-wider text-white bg-char hover:bg-char/90 rounded-lg transition-colors"
               >
-                Clear filters →
+                Reset All Filters
               </Link>
             </div>
           ) : (
             <>
-              <p className="text-xs text-ash mb-5">
-                {products.length} product{products.length !== 1 ? "s" : ""}
+              <div className="flex items-center justify-between mb-6 border-b border-gray-100 pb-4">
+                <p className="text-xs font-semibold text-ash uppercase tracking-wider">
+                  Showing {products.length} machine{products.length !== 1 ? "s" : ""}
+                </p>
                 {activeFilterCount > 0 && (
                   <Link
                     href="/equipment"
-                    className="ml-2 text-ember hover:underline"
+                    className="text-xs font-bold text-ember hover:text-ember-dark transition-colors"
                   >
-                    Clear filters
+                    Clear All Filters ({activeFilterCount})
                   </Link>
                 )}
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {products.map((p, i) => {
                   const deposit = Math.round(
                     (p.priceCents * (p.depositPercent ?? 0)) / 100
@@ -110,32 +113,41 @@ export default async function EquipmentPage({
                     <FadeIn key={p.id} delay={i * 0.05}>
                       <Link
                         href={`/equipment/${p.slug}`}
-                        className="group block border border-border rounded-xl p-4 hover:border-ember/30 transition-colors"
+                        className="group flex flex-col h-full border border-gray-150 rounded-2xl p-3 bg-white hover:border-ember/40 hover:shadow-lg hover:shadow-char/[0.02] transition-all duration-300"
                       >
-                        <div className="relative bg-steam rounded-lg aspect-square mb-3 overflow-hidden">
+                        {/* Image wrapper */}
+                        <div className="relative bg-steam rounded-xl aspect-square mb-4 overflow-hidden">
                           <Image
                             src={p.images?.[0] ?? "/placeholder.png"}
                             alt={p.name}
                             fill
-                            className="object-cover transition-transform group-hover:scale-[1.02]"
-                            sizes="(max-width: 768px) 100vw, 33vw"
+                            className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                           />
+                          {p.certification && (
+                            <div className="absolute top-2.5 left-2.5 z-10">
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-white/95 text-char backdrop-blur border border-gray-100 px-2.5 py-1 rounded-md shadow-sm">
+                                <ShieldCheck size={11} className="text-emerald-600" /> {p.certification.type}
+                              </span>
+                            </div>
+                          )}
                         </div>
-                        {p.certification && (
-                          <span className="inline-flex items-center gap-1 text-xs bg-steam text-ash px-2.5 py-1 rounded-md mb-2">
-                            <ShieldCheck size={12} /> {p.certification.type}
-                          </span>
-                        )}
-                        <p className="text-sm font-medium text-char mb-0.5">
-                          {p.name}
-                        </p>
-                        <p className="text-sm text-char">
-                          ${(p.priceCents / 100).toFixed(0)}
-                        </p>
-                        <p className="text-xs text-ash">
-                          ${(deposit / 100).toFixed(0)} deposit ·{" "}
-                          {p.leadTimeDays}-day lead
-                        </p>
+
+                        {/* Text and Pricing details */}
+                        <div className="flex flex-col flex-1 px-1 pb-1">
+                          <h3 className="text-sm font-semibold text-char mb-1 group-hover:text-ember transition-colors leading-snug">
+                            {p.name}
+                          </h3>
+                          
+                          <div className="mt-auto pt-2 space-y-1">
+                            <p className="text-base font-bold text-char">
+                              ${(p.priceCents / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                            </p>
+                            <p className="text-[11px] text-ash font-medium">
+                              <span className="text-char font-semibold">${(deposit / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span> deposit · <span className="text-char font-semibold">{p.leadTimeDays}d</span> lead time
+                            </p>
+                          </div>
+                        </div>
                       </Link>
                     </FadeIn>
                   );

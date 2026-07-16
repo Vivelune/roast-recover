@@ -1,11 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import ProductEditClient from "@/components/ProductEditClient";
@@ -67,22 +62,24 @@ export default async function EditProductPage({
   }
 
   return (
-    <div className="max-w-xl">
+    <div className="max-w-2xl mx-auto space-y-6">
       <Link
         href="/admin/products"
-        className="inline-flex items-center gap-1.5 text-sm text-ash hover:text-char mb-6"
+        className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-ash hover:text-char transition-colors"
       >
-        <ArrowLeft size={14} /> Back to products
+        <ArrowLeft size={13} /> Back to products
       </Link>
 
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
-          <h1 className="font-display font-semibold text-2xl text-char mb-1">
-            Edit product
+          <h1 className="font-display font-semibold text-2xl sm:text-3xl text-char tracking-tight">
+            Edit Product
           </h1>
-          <p className="text-xs text-ash">
+          <p className="text-xs text-ash mt-1 font-medium">
             Category:{" "}
-            <span className="font-medium text-char">{product.category}</span>
+            <span className="font-bold text-ember uppercase tracking-wider bg-steam px-2 py-0.5 rounded text-[10px]">
+              {product.category}
+            </span>
           </p>
         </div>
       </div>

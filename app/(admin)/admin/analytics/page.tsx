@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import { Card } from "@/components/ui/card";
-
 import { Users, Eye, TrendingUp, Globe } from "lucide-react";
 import VisitorChart from "@/components/admin/VisitorChart";
 
@@ -106,124 +105,139 @@ export default async function AdminAnalyticsPage() {
       : "0.00";
 
   return (
-    <div>
-      <h1 className="font-display font-semibold text-2xl text-char mb-8">
-        Visitor analytics
-      </h1>
+    <div className="max-w-5xl mx-auto px-4 py-8 sm:py-12 space-y-10">
+      {/* Header */}
+      <div>
+        <h1 className="font-display font-semibold text-2xl sm:text-3xl text-char tracking-tight mb-2">
+          Visitor Analytics
+        </h1>
+        <p className="text-sm text-ash">
+          Real-time insights from your database. Track user journeys, conversion events, and page traffic patterns.
+        </p>
+      </div>
 
       {/* Summary stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
           {
-            label: "Page views (30d)",
+            label: "Page Views (30d)",
             value: totalViews30d.toLocaleString(),
             sub: `${totalViewsYesterday} yesterday`,
             icon: Eye,
           },
           {
-            label: "Unique visitors (30d)",
+            label: "Unique Visitors (30d)",
             value: uniqueSessions30d.toLocaleString(),
             sub: `${totalViews7d} views this week`,
             icon: Users,
           },
           {
-            label: "New accounts (30d)",
+            label: "New Accounts (30d)",
             value: signups30d,
             sub: "registered users",
             icon: TrendingUp,
           },
           {
-            label: "Leads submitted (30d)",
+            label: "Leads Submitted (30d)",
             value: leads30d,
             sub: `${conversionRate}% of visitors`,
             icon: Globe,
           },
         ].map(({ label, value, sub, icon: Icon }) => (
-          <Card key={label} className="p-4">
-            <Icon size={16} className="text-ash mb-3" />
-            <p className="font-display font-semibold text-2xl text-char">
-              {value}
-            </p>
-            <p className="text-xs font-medium text-ash mt-0.5">{label}</p>
-            <p className="text-xs text-ash/60 mt-0.5">{sub}</p>
+          <Card key={label} className="p-6 border-gray-150 shadow-[0_1px_3px_rgba(0,0,0,0.01)] rounded-2xl bg-white flex flex-col justify-between">
+            <div>
+              <div className="w-10 h-10 rounded-xl bg-steam flex items-center justify-center text-ash mb-4 border border-gray-100/50">
+                <Icon size={16} className="text-char" />
+              </div>
+              <p className="font-display font-bold text-2xl sm:text-3xl text-char tracking-tight">
+                {value}
+              </p>
+            </div>
+            <div className="mt-4 border-t border-gray-100 pt-3">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-ash">{label}</p>
+              <p className="text-xs text-ash mt-0.5 font-semibold">{sub}</p>
+            </div>
           </Card>
         ))}
       </div>
 
-      {/* Views chart */}
-      <Card className="p-5 mb-8">
-        <p className="text-sm font-medium text-char mb-4">
+      {/* Views chart card */}
+      <Card className="p-6 sm:p-8 border-gray-150 shadow-[0_1px_3px_rgba(0,0,0,0.01)] rounded-2xl bg-white">
+        <p className="text-xs font-bold uppercase tracking-wider text-char mb-6">
           Page views — last 30 days
         </p>
-        <VisitorChart data={chartData} />
+        <div className="h-[240px]">
+          <VisitorChart data={chartData} />
+        </div>
       </Card>
 
-      <div className="grid md:grid-cols-3 gap-6 mb-6">
+      {/* Regional breakdowns and page grids */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Top pages */}
-        <Card className="p-5 md:col-span-1">
-          <p className="text-sm font-medium text-char mb-4">Top pages</p>
-          <div className="space-y-2.5">
-            {topPages.map((p, i) => {
+        <Card className="p-6 border-gray-150 shadow-[0_1px_3px_rgba(0,0,0,0.01)] rounded-2xl bg-white">
+          <p className="text-xs font-bold uppercase tracking-wider text-char mb-4">Top Pages</p>
+          <div className="space-y-4">
+            {topPages.map((p) => {
               const pct =
                 totalViews30d > 0
                   ? Math.round((p._count.path / totalViews30d) * 100)
                   : 0;
               return (
-                <div key={p.path}>
-                  <div className="flex items-center justify-between text-xs mb-1">
-                    <span className="text-char truncate max-w-[140px]" title={p.path}>
+                <div key={p.path} className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-char font-semibold truncate max-w-[170px]" title={p.path}>
                       {p.path === "/" ? "Homepage" : p.path}
                     </span>
-                    <span className="text-ash flex-shrink-0 ml-2">
+                    <span className="text-ash font-bold">
                       {p._count.path.toLocaleString()}
                     </span>
                   </div>
-                  <div className="w-full bg-gray-100 rounded-full h-1">
+                  <div className="w-full bg-steam rounded-full h-1.5">
                     <div
-                      className="bg-ember h-1 rounded-full"
-                      style={{ width: `${pct}%` }}
+                      className="bg-char h-1.5 rounded-full transition-all duration-300"
+                      style={{ width: `${Math.max(pct, 2)}%` }}
                     />
                   </div>
                 </div>
               );
             })}
             {topPages.length === 0 && (
-              <p className="text-ash text-sm">No data yet</p>
+              <p className="text-ash text-xs italic">No page records found.</p>
             )}
           </div>
         </Card>
 
         {/* Countries */}
-        <Card className="p-5">
-          <p className="text-sm font-medium text-char mb-4">
-            Visitors by country
+        <Card className="p-6 border-gray-150 shadow-[0_1px_3px_rgba(0,0,0,0.01)] rounded-2xl bg-white">
+          <p className="text-xs font-bold uppercase tracking-wider text-char mb-4">
+            Visitors by Country
           </p>
-          <div className="space-y-2">
+          <div className="divide-y divide-gray-100">
             {topCountries.map((c) => (
               <div
                 key={c.country}
-                className="flex justify-between text-xs"
+                className="flex justify-between items-center py-2.5 text-xs first:pt-0 last:pb-0"
               >
-                <span className="text-char">{c.country ?? "Unknown"}</span>
-                <span className="text-ash">
+                <span className="text-char font-semibold">{c.country ?? "Unknown"}</span>
+                <span className="text-ash font-bold bg-steam px-2 py-0.5 rounded-md border border-gray-200/20">
                   {c._count.country.toLocaleString()}
                 </span>
               </div>
             ))}
             {topCountries.length === 0 && (
-              <p className="text-ash text-sm">No data yet</p>
+              <p className="text-ash text-xs italic py-2">No country origin records found.</p>
             )}
           </div>
         </Card>
 
         {/* Referrers */}
-        <Card className="p-5">
-          <p className="text-sm font-medium text-char mb-4">
-            Traffic sources
+        <Card className="p-6 border-gray-150 shadow-[0_1px_3px_rgba(0,0,0,0.01)] rounded-2xl bg-white">
+          <p className="text-xs font-bold uppercase tracking-wider text-char mb-4">
+            Traffic Sources
           </p>
-          <div className="space-y-2">
+          <div className="divide-y divide-gray-100">
             {topReferrers.map((r) => {
-              let domain = r.referrer ?? "Direct";
+              let domain = r.referrer ?? "Direct / Search";
               try {
                 if (r.referrer) {
                   domain = new URL(r.referrer).hostname.replace("www.", "");
@@ -232,35 +246,36 @@ export default async function AdminAnalyticsPage() {
               return (
                 <div
                   key={r.referrer}
-                  className="flex justify-between text-xs"
+                  className="flex justify-between items-center py-2.5 text-xs first:pt-0 last:pb-0"
                 >
-                  <span className="text-char truncate max-w-[150px]">
+                  <span className="text-char font-semibold truncate max-w-[170px]" title={domain}>
                     {domain}
                   </span>
-                  <span className="text-ash">
-                    {r._count.referrer?.toLocaleString()}
+                  <span className="text-ash font-bold bg-steam px-2 py-0.5 rounded-md border border-gray-200/20">
+                    {r._count.referrer?.toLocaleString() ?? 0}
                   </span>
                 </div>
               );
             })}
             {topReferrers.length === 0 && (
-              <p className="text-ash text-sm">No referrer data yet</p>
+              <p className="text-ash text-xs italic py-2">No referrer sources found.</p>
             )}
           </div>
         </Card>
       </div>
 
-      <p className="text-xs text-ash text-center">
-        Data from your own database. Also check{" "}
+      {/* External reference note */}
+      <p className="text-[11px] text-ash text-center pt-4">
+        Custom internal engine metrics. Check{" "}
         <a
           href="https://vercel.com/analytics"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-ember hover:underline"
+          className="text-char font-semibold hover:underline"
         >
           Vercel Analytics
         </a>{" "}
-        for additional insights including Core Web Vitals.
+        for additional technical insight records like Core Web Vitals (CWV).
       </p>
     </div>
   );
