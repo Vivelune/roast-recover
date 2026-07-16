@@ -4,6 +4,7 @@ import { updateTestimonial, deleteTestimonial } from "@/app/actions/testimonials
 import { TestimonialForm } from "../../new/page";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import DeleteTestimonialButton from "@/components/admin/DeleteTestimonialButton";
 
 export default async function EditTestimonialPage({
   params,
@@ -38,30 +39,25 @@ export default async function EditTestimonialPage({
   }
 
   return (
-    <div className="max-w-xl">
+    <div className="max-w-2xl mx-auto px-4 py-8 sm:py-12 space-y-6">
       <Link
         href="/admin/testimonials"
-        className="inline-flex items-center gap-1.5 text-sm text-ash hover:text-char mb-6"
+        className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-ash hover:text-char transition-colors"
       >
-        <ArrowLeft size={14} /> Back
+        <ArrowLeft size={13} /> Back to Testimonials
       </Link>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="font-display font-semibold text-2xl text-char">
-          Edit testimonial
-        </h1>
+      
+      <div className="flex items-center justify-between gap-4 border-b border-gray-150 pb-4">
+        <div>
+          <h1 className="font-display font-semibold text-2xl sm:text-3xl text-char tracking-tight">
+            Edit Testimonial
+          </h1>
+        </div>
         <form action={handleDelete}>
-          <button
-            type="submit"
-            className="text-sm text-red-500 hover:text-red-700 transition-colors"
-            onClick={(e) => {
-              if (!confirm("Delete this testimonial? This cannot be undone."))
-                e.preventDefault();
-            }}
-          >
-            Delete
-          </button>
+          <DeleteTestimonialButton />
         </form>
       </div>
+
       <TestimonialForm action={handleUpdate} defaults={t} />
     </div>
   );

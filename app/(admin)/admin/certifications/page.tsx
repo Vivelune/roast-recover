@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { ShieldCheck, AlertTriangle, Plus, ExternalLink } from "lucide-react";
+import { ShieldCheck, AlertTriangle, Plus, ExternalLink, Package, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,288 +74,295 @@ export default async function AdminCertificationsPage() {
   const unlinkedProducts = equipmentProducts.filter((p) => !p.certificationId);
 
   return (
-    <div className="max-w-3xl">
-      <h1 className="font-display font-semibold text-2xl text-char mb-2">
-        Certifications
-      </h1>
-
-      {/* Explanation */}
-      <div className="bg-steam/60 border border-steam rounded-lg px-4 py-3 mb-8 text-sm text-ash leading-relaxed">
-        <p className="font-medium text-char mb-1">What certifications do</p>
-        <p>
-          Every equipment product must have a linked, valid certification before
-          it can be sold. This is the UL, NSF, or ETL listing number that
-          confirms the machine is safe for commercial use in the US. Link a
-          certification to a product using the dropdown on each card below.
-          Certifications expiring within 60 days are flagged automatically.
-        </p>
+    <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12 space-y-10">
+      {/* Page Header */}
+      <div>
+        <h1 className="font-display font-semibold text-2xl sm:text-3xl text-char tracking-tight mb-3">
+          Certifications
+        </h1>
+        {/* Explanation banner */}
+        <div className="bg-steam/40 border border-gray-150 rounded-2xl px-5 py-4 text-sm text-ash leading-relaxed">
+          <p className="font-bold text-char mb-1">Commercial Safety Standards</p>
+          <p>
+            Every equipment listing must link to a valid certification before being eligible for sale. 
+            This confirms the machine's safety listing (UL, NSF, or ETL) for commercial environments. 
+            Use the tools below to register new certificates and map them to their corresponding equipment.
+          </p>
+        </div>
       </div>
 
-      {/* Expiry alert banner */}
+      {/* Expiry Alert Banner */}
       {certs.some((c) => c.expiresAt && c.expiresAt < soon) && (
-        <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 mb-6 text-sm text-amber-800">
-          <AlertTriangle size={16} className="shrink-0 mt-0.5" />
-          <p>
-            One or more certifications are expiring within 60 days. Renew the
-            listing with UL/NSF/ETL and update the expiry date below.
-          </p>
+        <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 text-sm text-amber-900 shadow-sm">
+          <AlertTriangle size={18} className="text-amber-600 shrink-0 mt-0.5" />
+          <div>
+            <p className="font-bold">Certifications Expiring Soon</p>
+            <p className="text-amber-800 mt-0.5">
+              One or more certifications are expiring within the next 60 days. Please secure renewed listings and update the dates below.
+            </p>
+          </div>
         </div>
       )}
 
-      {/* Add new certification form */}
-      <Card className="p-5 mb-8">
-        <p className="text-sm font-medium text-char mb-4 flex items-center gap-2">
-          <Plus size={15} /> Add certification
-        </p>
-        <form action={createCert} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+      {/* Register New Certification Form */}
+      <Card className="p-6 sm:p-8 border-gray-150 shadow-[0_1px_3px_rgba(0,0,0,0.01)] rounded-2xl bg-white">
+        <h2 className="font-bold text-char text-base mb-6 flex items-center gap-2">
+          <Plus size={18} /> Register New Certification
+        </h2>
+        <form action={createCert} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-1.5">
-              <Label htmlFor="type">Certification type</Label>
+              <Label htmlFor="type" className="text-xs font-bold uppercase tracking-wider text-char">Certification Type</Label>
               <select
                 id="type"
                 name="type"
                 required
-                className="w-full border border-border rounded-md px-3 py-2.5 text-sm bg-white text-char focus:outline-none focus:ring-1 focus:ring-ember"
+                className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold bg-white text-char focus:outline-none focus:ring-1 focus:ring-char"
               >
                 <option value="UL">UL (Underwriters Laboratories)</option>
                 <option value="NSF">NSF (National Sanitation Foundation)</option>
                 <option value="ETL">ETL (Intertek)</option>
-                <option value="UL_NSF">UL + NSF (both)</option>
+                <option value="UL_NSF">UL + NSF (Both)</option>
               </select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="listingNumber">Listing number</Label>
+              <Label htmlFor="listingNumber" className="text-xs font-bold uppercase tracking-wider text-char">Listing / File Number</Label>
               <Input
                 id="listingNumber"
                 name="listingNumber"
                 required
+                className="rounded-xl border-gray-200 focus-visible:ring-char"
                 placeholder="e.g. E123456 or NSF-78901"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="documentUrl">
-              Document URL{" "}
-              <span className="text-ash text-xs">
-                (public listing page or uploaded PDF)
-              </span>
+            <Label htmlFor="documentUrl" className="text-xs font-bold uppercase tracking-wider text-char">
+              Document URL <span className="text-ash font-normal normal-case">(Public Database Link or Hosted PDF)</span>
             </Label>
             <Input
               id="documentUrl"
               name="documentUrl"
               type="url"
               required
+              className="rounded-xl border-gray-200 focus-visible:ring-char"
               placeholder="https://ul.com/listings/..."
             />
-            <p className="text-xs text-ash">
-              Link directly to the UL/NSF/ETL public listing, or upload the
-              certification PDF to any file host and paste the URL here.
+            <p className="text-[11px] text-ash font-medium leading-relaxed">
+              Link directly to the directory status page, or input a cloud-hosted link to the safety PDF.
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-1.5">
-              <Label htmlFor="verifiedAt">Date verified</Label>
+              <Label htmlFor="verifiedAt" className="text-xs font-bold uppercase tracking-wider text-char">Date Verified</Label>
               <Input
                 id="verifiedAt"
                 name="verifiedAt"
                 type="date"
+                className="rounded-xl border-gray-200 focus-visible:ring-char"
                 defaultValue={new Date().toISOString().split("T")[0]}
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="expiresAt">
-                Expiry date{" "}
-                <span className="text-ash text-xs">(blank = no expiry)</span>
+              <Label htmlFor="expiresAt" className="text-xs font-bold uppercase tracking-wider text-char">
+                Expiry Date <span className="text-ash font-normal normal-case">(Leave blank if indefinite)</span>
               </Label>
-              <Input id="expiresAt" name="expiresAt" type="date" />
+              <Input 
+                id="expiresAt" 
+                name="expiresAt" 
+                type="date" 
+                className="rounded-xl border-gray-200 focus-visible:ring-char"
+              />
             </div>
           </div>
 
-          <Button type="submit" className="bg-ember hover:bg-ember-dark">
-            Add certification
+          <Button type="submit" className="bg-char hover:bg-char/90 text-white rounded-xl h-11 px-6 font-bold uppercase tracking-wider text-xs">
+            Save Certification
           </Button>
         </form>
       </Card>
 
-      {/* Certification cards */}
-      {certs.length === 0 ? (
-        <div className="text-center py-12 border border-dashed border-border rounded-lg">
-          <ShieldCheck size={24} className="text-ash mx-auto mb-3" />
-          <p className="text-char font-medium mb-1">No certifications yet</p>
-          <p className="text-ash text-sm">
-            Add a certification above, then link it to your equipment products.
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {certs.map((cert) => {
-            const expired = cert.expiresAt && cert.expiresAt < now;
-            const expiringSoon =
-              cert.expiresAt && cert.expiresAt < soon && !expired;
+      {/* Active Listings Grid */}
+      <div className="space-y-6">
+        <h2 className="font-bold text-char text-lg">Active Listings</h2>
 
-            const availableToLink = equipmentProducts.filter(
-              (p) => !p.certificationId
-            );
+        {certs.length === 0 ? (
+          <div className="text-center py-20 border-2 border-dashed border-gray-150 rounded-2xl">
+            <ShieldCheck size={32} className="text-ash mx-auto mb-3" />
+            <p className="text-char font-semibold">No certifications currently on file</p>
+            <p className="text-ash text-xs mt-1">Register a standard above to map it with active equipment listings.</p>
+          </div>
+        ) : (
+          <div className="space-y-5">
+            {certs.map((cert) => {
+              const expired = cert.expiresAt && cert.expiresAt < now;
+              const expiringSoon = cert.expiresAt && cert.expiresAt < soon && !expired;
 
-            return (
-              <Card
-                key={cert.id}
-                className={`p-5 ${
-                  expired
-                    ? "border-red-300 bg-red-50/20"
-                    : expiringSoon
-                    ? "border-amber-300 bg-amber-50/20"
-                    : ""
-                }`}
-              >
-                {/* Header row */}
-                <div className="flex items-start justify-between gap-4 mb-4">
-                  <div className="flex items-start gap-3">
-                    <div
-                      className={`mt-0.5 shrink-0 ${
-                        expired
-                          ? "text-red-500"
-                          : expiringSoon
-                          ? "text-amber-500"
-                          : "text-ember"
-                      }`}
-                    >
-                      {expired || expiringSoon ? (
-                        <AlertTriangle size={16} />
-                      ) : (
-                        <ShieldCheck size={16} />
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-char">
-                        {cert.type} — #{cert.listingNumber}
-                      </p>
-                      <div className="flex items-center gap-3 mt-1 flex-wrap">
-                        {cert.verifiedAt && (
-                          <p className="text-xs text-ash">
-                            Verified{" "}
-                            {new Date(cert.verifiedAt).toLocaleDateString()}
-                          </p>
-                        )}
-                        {cert.expiresAt ? (
-                          <p
-                            className={`text-xs font-medium ${
-                              expired
-                                ? "text-red-600"
-                                : expiringSoon
-                                ? "text-amber-600"
-                                : "text-ash"
-                            }`}
-                          >
-                            {expired ? "Expired" : "Expires"}{" "}
-                            {new Date(cert.expiresAt).toLocaleDateString()}
-                          </p>
+              const availableToLink = equipmentProducts.filter(
+                (p) => !p.certificationId
+              );
+
+              return (
+                <Card
+                  key={cert.id}
+                  className={`p-6 border rounded-2xl transition-all ${
+                    expired
+                      ? "border-red-200 bg-red-50/10"
+                      : expiringSoon
+                      ? "border-amber-200 bg-amber-50/10"
+                      : "border-gray-150 shadow-[0_1px_3px_rgba(0,0,0,0.01)]"
+                  }`}
+                >
+                  {/* Card Header Block */}
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-5">
+                    <div className="flex gap-3.5">
+                      <div
+                        className={`p-2.5 rounded-xl border shrink-0 ${
+                          expired
+                            ? "bg-red-100 text-red-600 border-red-200"
+                            : expiringSoon
+                            ? "bg-amber-100 text-amber-700 border-amber-200"
+                            : "bg-steam text-char border-gray-200/40"
+                        }`}
+                      >
+                        {expired || expiringSoon ? (
+                          <AlertTriangle size={18} />
                         ) : (
-                          <p className="text-xs text-ash">No expiry date</p>
+                          <ShieldCheck size={18} />
                         )}
                       </div>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-3 shrink-0">
-                                  {cert.documentUrl && (
-                  <a
-                    href={cert.documentUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-ember flex items-center gap-1 hover:underline"
-                  >
-                    View doc <ExternalLink size={11} />
-                  </a>
-                )}
-                    <form action={deleteCert}>
-                      <input type="hidden" name="id" value={cert.id} />
-                      <DeleteCertificationButton />
-                    </form>
-                  </div>
-                </div>
-
-                <Separator className="mb-4" />
-
-                {/* Linked products */}
-                <div className="mb-4">
-                  <p className="text-xs uppercase tracking-wide text-ash mb-2">
-                    Linked products
-                  </p>
-                  {cert.products.length === 0 ? (
-                    <p className="text-sm text-ash italic">
-                      No products linked yet — use the dropdown below to link one.
-                    </p>
-                  ) : (
-                    <div className="space-y-1.5">
-                      {cert.products.map((p) => (
-                        <div
-                          key={p.id}
-                          className="flex items-center justify-between bg-steam/50 rounded-md px-3 py-2"
-                        >
-                          <p className="text-sm text-char">{p.name}</p>
-                          <form action={unlinkProduct}>
-                            <input
-                              type="hidden"
-                              name="productId"
-                              value={p.id}
-                            />
-                            <button
-                              type="submit"
-                              className="text-xs text-ash hover:text-red-500 transition-colors"
+                      <div className="space-y-1">
+                        <h4 className="font-bold text-char text-sm sm:text-base">
+                          {cert.type} — File #{cert.listingNumber}
+                        </h4>
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ash font-medium">
+                          {cert.verifiedAt && (
+                            <span>
+                              Verified {new Date(cert.verifiedAt).toLocaleDateString()}
+                            </span>
+                          )}
+                          {cert.verifiedAt && cert.expiresAt && <span className="text-gray-250">•</span>}
+                          {cert.expiresAt ? (
+                            <span
+                              className={
+                                expired
+                                  ? "text-red-600 font-semibold"
+                                  : expiringSoon
+                                  ? "text-amber-700 font-semibold"
+                                  : ""
+                              }
                             >
-                              Unlink
-                            </button>
-                          </form>
+                              {expired ? "Expired" : "Expires"}{" "}
+                              {new Date(cert.expiresAt).toLocaleDateString()}
+                            </span>
+                          ) : (
+                            <span>Indefinite Validity</span>
+                          )}
                         </div>
-                      ))}
+                      </div>
                     </div>
-                  )}
-                </div>
 
-                {/* Link a product dropdown */}
-                {availableToLink.length > 0 ? (
-                  <form
-                    action={linkProduct}
-                    className="flex items-center gap-2"
-                  >
-                    <input type="hidden" name="certId" value={cert.id} />
-                    <select
-                      name="productId"
-                      required
-                      className="flex-1 border border-border rounded-md px-3 py-2 text-sm bg-white text-char focus:outline-none focus:ring-1 focus:ring-ember"
+                    {/* Meta Action Buttons */}
+                    <div className="flex items-center gap-3.5 shrink-0 self-end sm:self-start">
+                      {cert.documentUrl && (
+                        <a
+                          href={cert.documentUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-bold text-char hover:text-ember flex items-center gap-1 transition-colors"
+                        >
+                          View directory status <ExternalLink size={12} />
+                        </a>
+                      )}
+                      <span className="text-gray-200 hidden sm:inline">|</span>
+                      <form action={deleteCert}>
+                        <input type="hidden" name="id" value={cert.id} />
+                        <DeleteCertificationButton />
+                      </form>
+                    </div>
+                  </div>
+
+                  <Separator className="my-5 border-gray-100" />
+
+                  {/* Linked Products Tags Section */}
+                  <div className="space-y-3 mb-5">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-ash flex items-center gap-1.5">
+                      <Package size={12} /> Registered Products
+                    </p>
+                    {cert.products.length === 0 ? (
+                      <p className="text-xs text-ash italic leading-normal">
+                        No equipment catalog entries associated with this registry file.
+                      </p>
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {cert.products.map((p) => (
+                          <div
+                            key={p.id}
+                            className="inline-flex items-center gap-2 bg-[#FBFBFA] border border-gray-150 rounded-lg pl-3 pr-2 py-1.5 text-xs text-char font-semibold"
+                          >
+                            <span>{p.name}</span>
+                            <form action={unlinkProduct}>
+                              <input
+                                type="hidden"
+                                name="productId"
+                                value={p.id}
+                              />
+                              <button
+                                type="submit"
+                                className="text-ash hover:text-red-600 transition-colors focus:outline-none p-0.5 rounded-md hover:bg-red-50"
+                                title="Unlink product"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </form>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Association Controls (Link a Product) */}
+                  {availableToLink.length > 0 ? (
+                    <form
+                      action={linkProduct}
+                      className="flex gap-2 items-center"
                     >
-                      <option value="">
-                        Link an equipment product to this cert...
-                      </option>
-                      {availableToLink.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.name}
+                      <input type="hidden" name="certId" value={cert.id} />
+                      <select
+                        name="productId"
+                        required
+                        className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-xs font-semibold text-char bg-white focus:outline-none focus:ring-1 focus:ring-char"
+                      >
+                        <option value="">
+                          Select equipment to assign...
                         </option>
-                      ))}
-                    </select>
-                    <Button
-                      type="submit"
-                      size="sm"
-                      variant="outline"
-                      className="shrink-0"
-                    >
-                      Link
-                    </Button>
-                  </form>
-                ) : (
-                  <p className="text-xs text-ash">
-                    All equipment products are already linked to a certification.
-                  </p>
-                )}
-              </Card>
-            );
-          })}
-        </div>
-      )}
+                        {availableToLink.map((p) => (
+                          <option key={p.id} value={p.id} className="text-xs">
+                            {p.name}
+                          </option>
+                        ))}
+                      </select>
+                      <Button
+                        type="submit"
+                        size="sm"
+                        className="bg-char text-white hover:bg-char/90 text-xs font-bold uppercase tracking-wider rounded-xl px-4 shrink-0 h-[34px]"
+                      >
+                        Link
+                      </Button>
+                    </form>
+                  ) : (
+                    <p className="text-[11px] font-medium text-ash">
+                      All catalog machinery is current with active compliance records.
+                    </p>
+                  )}
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

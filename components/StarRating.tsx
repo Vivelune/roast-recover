@@ -13,8 +13,8 @@ export function StarDisplay({
   count?: number;
 }) {
   return (
-    <div className="flex items-center gap-1">
-      <div className="flex">
+    <div className="flex items-center gap-1.5">
+      <div className="flex gap-0.5">
         {[1, 2, 3, 4, 5].map((star) => (
           <Star
             key={star}
@@ -29,10 +29,10 @@ export function StarDisplay({
         ))}
       </div>
       {showNumber && (
-        <span className="text-sm text-ash">
+        <span className="text-xs font-semibold text-char">
           {rating.toFixed(1)}
           {count !== undefined && (
-            <span className="ml-1">({count})</span>
+            <span className="ml-1 text-ash font-medium">({count})</span>
           )}
         </span>
       )}
@@ -48,22 +48,22 @@ export function StarPicker({
   onChange: (rating: number) => void;
 }) {
   return (
-    <div className="flex gap-1">
+    <div className="flex gap-1.5">
       {[1, 2, 3, 4, 5].map((star) => (
         <button
           key={star}
           type="button"
           onClick={() => onChange(star)}
-          className="transition-transform hover:scale-110"
+          className="transition-transform hover:scale-110 active:scale-95"
           aria-label={`Rate ${star} star${star !== 1 ? "s" : ""}`}
         >
           <Star
-            size={28}
+            size={26}
             strokeWidth={1.5}
             className={
               star <= value
                 ? "fill-ember text-ember"
-                : "fill-none text-gray-300 hover:text-ember/50"
+                : "fill-none text-gray-300 hover:text-ember/70"
             }
           />
         </button>

@@ -1,7 +1,8 @@
 "use client";
+
 import Link from "next/link";
 import Image from "next/image";
-import { Trash2, ArrowRight, Minus, Plus, Wrench } from "lucide-react";
+import { Trash2, ArrowRight, Minus, Plus, Wrench, ShoppingBag } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEquipmentCart } from "@/lib/equipment-cart-store";
 import { Button } from "@/components/ui/button";
@@ -21,20 +22,21 @@ export default function EquipmentCartPage() {
     (sum, i) => sum + i.priceCents * i.quantity,
     0
   );
+  const remainingBalance = totalValue - totalDeposit;
 
   if (items.length === 0) {
     return (
-      <div className="max-w-md mx-auto px-8 py-28 text-center">
-        <div className="w-14 h-14 rounded-full bg-steam flex items-center justify-center text-ash mx-auto mb-5">
-          <Wrench size={22} strokeWidth={1.5} />
+      <div className="max-w-md mx-auto px-6 py-24 sm:py-32 text-center">
+        <div className="w-16 h-16 rounded-2xl bg-steam/60 border border-gray-200/20 flex items-center justify-center text-char mx-auto mb-6">
+          <Wrench size={24} strokeWidth={1.5} />
         </div>
-        <p className="font-display font-semibold text-lg text-char mb-1">
-          No equipment in your order yet
+        <h2 className="font-display font-semibold text-xl text-char mb-2">
+          Your equipment cart is empty
+        </h2>
+        <p className="text-ash text-sm mb-8 max-w-sm mx-auto leading-relaxed">
+          Browse our high-quality equipment listings and reserve machines for your café setup.
         </p>
-        <p className="text-ash text-sm mb-6">
-          Browse equipment to start building your order.
-        </p>
-        <Button asChild className="bg-ember hover:bg-ember-dark">
+        <Button asChild size="lg" className="bg-char hover:bg-char/90 text-white font-bold text-xs uppercase tracking-wider px-6 py-3 rounded-xl">
           <Link href="/equipment">Browse equipment</Link>
         </Button>
       </div>
@@ -42,16 +44,19 @@ export default function EquipmentCartPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-8 py-16">
-      <h1 className="font-display font-semibold text-2xl text-char mb-2">
-        Your equipment order
-      </h1>
-      <p className="text-ash text-sm mb-8">
-        You'll pay a combined deposit today. Each machine's balance is
-        invoiced separately once it's ready to ship.
-      </p>
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 space-y-8">
+      {/* Page Header */}
+      <div className="space-y-2">
+        <h1 className="font-display font-semibold text-2xl sm:text-3xl text-char tracking-tight">
+          Your equipment order
+        </h1>
+        <p className="text-ash text-sm leading-relaxed max-w-xl">
+          Secure production space with a standard deposit today. Remaining balances are calculated and invoiced individually once the machines clear final inspection and prepare for shipment.
+        </p>
+      </div>
 
-      <Card className="overflow-hidden p-0">
+      {/* Cart Items Card */}
+      <Card className="overflow-hidden border-gray-150 shadow-[0_1px_3px_rgba(0,0,0,0.01)] bg-white rounded-2xl">
         <AnimatePresence initial={false}>
           {items.map((item) => {
             const deposit = Math.round(
@@ -65,103 +70,135 @@ export default function EquipmentCartPage() {
                 transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
                 className="overflow-hidden"
               >
-                <div className="flex items-center gap-4 px-5 py-4">
-                  <div className="relative w-14 h-14 rounded-md bg-steam shrink-0 overflow-hidden">
-                    {item.image ? (
-                      <Image
-                        src={item.image}
-                        alt={item.name}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-steam" />
-                    )}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 px-5 py-5">
+                  
+                  {/* Thumbnail & Product Details Container */}
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
+                    <div className="relative w-16 h-16 rounded-xl bg-steam shrink-0 overflow-hidden border border-gray-100">
+                      {item.image ? (
+                        <Image
+                          src={item.image}
+                          alt={item.name}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-steam" />
+                      )}
+                    </div>
+
+                    <div className="min-w-0 space-y-1">
+                      <p className="text-sm font-semibold text-char truncate">
+                        {item.name}
+                      </p>
+                      <p className="text-xs text-ash">
+                        ${(deposit / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })} deposit per unit ·{" "}
+                        <span className="font-medium text-char">{item.leadTimeDays ?? "—"} day lead time</span>
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-char truncate">
-                      {item.name}
-                    </p>
-                    <p className="text-xs text-ash">
-                      ${(deposit / 100).toFixed(2)} deposit each ·{" "}
-                      {item.leadTimeDays ?? "—"}-day lead time
-                    </p>
-                  </div>
+                  {/* Quantity Actions & Price Breakdowns Container */}
+                  <div className="flex items-center justify-between sm:justify-end gap-6 pt-3 sm:pt-0 border-t sm:border-0 border-gray-100">
+                    
+                    {/* Quantity Selector */}
+                    <div className="flex items-center border border-gray-150 rounded-xl bg-[#FBFBFA] h-9">
+                      <button
+                        onClick={() =>
+                          updateQuantity(item.productId, item.quantity - 1)
+                        }
+                        className="p-2 text-ash hover:text-char transition-colors"
+                        aria-label="Decrease quantity"
+                      >
+                        <Minus size={13} />
+                      </button>
+                      <span className="text-xs font-bold text-char w-8 text-center select-none">
+                        {item.quantity}
+                      </span>
+                      <button
+                        onClick={() =>
+                          updateQuantity(item.productId, item.quantity + 1)
+                        }
+                        className="p-2 text-ash hover:text-char transition-colors"
+                        aria-label="Increase quantity"
+                      >
+                        <Plus size={13} />
+                      </button>
+                    </div>
 
-                  <div className="flex items-center border border-border rounded-md">
+                    {/* Deposit Calculation */}
+                    <div className="text-right min-w-[5.5rem]">
+                      <p className="text-xs text-ash">Deposit Subtotal</p>
+                      <p className="text-sm font-bold text-char">
+                        ${((deposit * item.quantity) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      </p>
+                    </div>
+
+                    {/* Delete Button */}
                     <button
-                      onClick={() =>
-                        updateQuantity(item.productId, item.quantity - 1)
-                      }
-                      className="p-1.5 text-ash hover:text-char transition-colors"
-                      aria-label="Decrease"
+                      onClick={() => removeItem(item.productId)}
+                      className="text-ash hover:text-red-500 hover:bg-red-50/50 p-2 rounded-lg transition-colors"
+                      aria-label="Remove item"
                     >
-                      <Minus size={13} />
+                      <Trash2 size={16} />
                     </button>
-                    <span className="text-sm text-char w-7 text-center select-none">
-                      {item.quantity}
-                    </span>
-                    <button
-                      onClick={() =>
-                        updateQuantity(item.productId, item.quantity + 1)
-                      }
-                      className="p-1.5 text-ash hover:text-char transition-colors"
-                      aria-label="Increase"
-                    >
-                      <Plus size={13} />
-                    </button>
+
                   </div>
-
-                  <p className="text-sm font-medium text-char w-20 text-right">
-                    ${((deposit * item.quantity) / 100).toFixed(2)}
-                  </p>
-
-                  <button
-                    onClick={() => removeItem(item.productId)}
-                    className="text-ash hover:text-red-500 transition-colors"
-                    aria-label="Remove"
-                  >
-                    <Trash2 size={15} />
-                  </button>
                 </div>
-                <Separator />
+                <Separator className="border-gray-100" />
               </motion.div>
             );
           })}
         </AnimatePresence>
 
-        <div className="px-5 py-4 space-y-1.5">
-          <div className="flex justify-between text-sm text-ash">
-            <span>Total equipment value</span>
-            <span>${(totalValue / 100).toFixed(2)}</span>
+        {/* Pricing Summary Block */}
+        <div className="bg-[#FBFBFA] px-5 py-6 space-y-4">
+          <div className="flex justify-between items-center text-xs sm:text-sm text-ash font-medium">
+            <span>Total Equipment Value</span>
+            <span>${(totalValue / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
           </div>
-          <div className="flex justify-between font-semibold text-char">
-            <span>Deposit due today</span>
-            <span>${(totalDeposit / 100).toFixed(2)}</span>
+          
+          <div className="flex justify-between items-center text-xs sm:text-sm text-ash font-medium border-b border-gray-200/50 pb-4">
+            <span>Remaining Sourcing Balances</span>
+            <span>${(remainingBalance / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+          </div>
+
+          <div className="flex justify-between items-baseline pt-1">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-char">Deposit Due Today</p>
+              <p className="text-[10px] text-ash mt-0.5">Locks in your pricing & production queue</p>
+            </div>
+            <span className="text-xl sm:text-2xl font-bold text-char">
+              ${(totalDeposit / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            </span>
           </div>
         </div>
       </Card>
 
-      <Button
-        asChild
-        className="w-full bg-ember text-white hover:bg-ember-dark mt-5 h-12 text-sm font-medium"
-      >
-        <Link
-          href="/equipment/checkout"
-          className="flex items-center justify-center gap-2"
+      {/* Checkout and Navigation Actions */}
+      <div className="space-y-4">
+        <Button
+          asChild
+          className="w-full bg-char hover:bg-char/90 text-white h-13 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shadow-sm"
         >
-          Continue to checkout <ArrowRight size={15} />
-        </Link>
-      </Button>
-      <VolumeOrderCTA items={items} /> 
+          <Link
+            href="/equipment/checkout"
+            className="flex items-center justify-center gap-2"
+          >
+            Continue to checkout <ArrowRight size={14} />
+          </Link>
+        </Button>
 
-      <p className="text-center text-xs text-ash mt-3">
-        Packaging order?{" "}
-        <Link href="/cart" className="text-ember underline">
-          View packaging cart
-        </Link>
-      </p>
+        <VolumeOrderCTA items={items} /> 
+
+        <div className="flex justify-center items-center gap-1.5 text-xs text-ash mt-2">
+          <ShoppingBag size={13} />
+          <span>Ordering custom prints or bags?</span>
+          <Link href="/cart" className="text-ember font-bold hover:underline">
+            View packaging cart
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

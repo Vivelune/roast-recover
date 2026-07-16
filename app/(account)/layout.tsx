@@ -25,32 +25,56 @@ export default async function AccountLayout({
   if (!user) redirect("/sign-in");
 
   return (
-    <div className="min-h-screen flex">
-      <aside className="hidden md:flex flex-col w-56 border-r border-border bg-[#FAFAF9] px-4 py-8 gap-1 shrink-0">
-      <div className="flex items-center justify-between px-3 mb-6">
-  <p className="text-xs uppercase tracking-wide text-gray-400">Account</p>
-  <Suspense fallback={null}>
-    <NavNotificationBell />
-  </Suspense>
-</div>
-        {sideLinks.map(({ href, label, icon: Icon }) => (
-          <Link
-            key={href}
-            href={href}
-            className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-ash hover:text-char hover:bg-steam/60 transition-colors"
-          >
-            <Icon size={15} />
-            {label}
-          </Link>
-        ))}
+    <div className="min-h-screen flex flex-col md:flex-row bg-[#FAFAF9]">
+      
+      {/* Desktop Left Sidebar (hidden on mobile) */}
+      <aside className="hidden md:flex flex-col w-64 border-r border-border bg-[#FAFAF9] px-4 py-8 gap-1 shrink-0 h-screen sticky top-0">
+        <div className="flex items-center justify-between px-3 mb-6">
+          <p className="text-xs uppercase tracking-wider font-semibold text-gray-400">Account</p>
+          <Suspense fallback={<div className="w-8 h-8 rounded-full bg-steam/50 animate-pulse" />}>
+            <NavNotificationBell />
+          </Suspense>
+        </div>
+        <nav className="space-y-1">
+          {sideLinks.map(({ href, label, icon: Icon }) => (
+            <Link
+              key={href}
+              href={href}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-ash hover:text-char hover:bg-steam/60 transition-colors"
+            >
+              <Icon size={16} className="text-ash/70" />
+              {label}
+            </Link>
+          ))}
+        </nav>
       </aside>
-      <div className="border-b border-border bg-white px-6 py-3 flex items-center justify-between md:hidden">
-  <p className="text-sm font-medium text-char">My Account</p>
-  <Suspense fallback={null}>
-    <NavNotificationBell />
-  </Suspense>
-</div>
-      <main className="flex-1 px-6 md:px-10 py-10 max-w-4xl">
+
+      {/* Mobile Sticky Top Header & Swipeable Nav */}
+      <div className="md:hidden sticky top-0 z-40 w-full bg-white border-b border-border">
+        <div className="px-5 py-3 flex items-center justify-between">
+          <p className="text-sm font-bold text-char tracking-tight">My Account</p>
+          <Suspense fallback={<div className="w-8 h-8 rounded-full bg-steam/50 animate-pulse" />}>
+            <NavNotificationBell />
+          </Suspense>
+        </div>
+        
+        {/* Horizontal Nav Scrollbar for Mobile */}
+        <div className="flex items-center gap-1 overflow-x-auto px-4 pb-3 pt-1 scrollbar-none">
+          {sideLinks.map(({ href, label, icon: Icon }) => (
+            <Link
+              key={href}
+              href={href}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold whitespace-nowrap bg-steam/40 text-ash active:bg-steam border border-transparent transition-all shrink-0"
+            >
+              <Icon size={13} />
+              {label}
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* Content Container */}
+      <main className="flex-1 bg-white px-4 sm:px-8 md:px-12 py-8 md:py-12 w-full max-w-4xl">
         {children}
       </main>
     </div>
