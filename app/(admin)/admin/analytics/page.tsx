@@ -174,7 +174,7 @@ export default async function AdminAnalyticsPage() {
                     <span className="text-char truncate max-w-[140px]" title={p.path}>
                       {p.path === "/" ? "Homepage" : p.path}
                     </span>
-                    <span className="text-ash flex-shrink-0 ml-2">
+                    <span className="text-ash shrink-0 ml-2">
                       {p._count.path.toLocaleString()}
                     </span>
                   </div>

@@ -137,7 +137,7 @@ export default function NotificationBell({
                       onClick={() => !n.read && markOneRead(n.id)}
                     >
                       <div className="flex items-start gap-2.5">
-                        <span className="text-base flex-shrink-0 mt-0.5">
+                        <span className="text-base shrink-0 mt-0.5">
                           {typeIcon[n.type] ?? "🔔"}
                         </span>
                         <div className="flex-1 min-w-0">
@@ -166,7 +166,7 @@ export default function NotificationBell({
                           </p>
                         </div>
                         {!n.read && (
-                          <div className="w-1.5 h-1.5 bg-ember rounded-full flex-shrink-0 mt-1.5" />
+                          <div className="w-1.5 h-1.5 bg-ember rounded-full shrink-0 mt-1.5" />
                         )}
                       </div>
                     </div>
