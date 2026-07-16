@@ -7,6 +7,7 @@ import {
 } from "@/lib/email";
 import { qualifyReferral, trackReferral } from "@/app/actions/referral";
 import { markOnboardingStep } from "@/app/actions/onboarding";
+import { createActivityEntry } from "@/lib/notifications";
 
 export async function POST(req: Request) {
   const body = await req.text();
@@ -54,7 +55,15 @@ export async function POST(req: Request) {
           data: { status: "PAID" },
           include: { items: { include: { product: true } }, user: true },
         });
-
+        await createActivityEntry(order.userId, {
+          type: "order_placed",
+          title: `Order placed — ${order.items[0]?.product.name}${
+            order.items.length > 1 ? ` +${order.items.length - 1}` : ""
+          }`,
+          metadata: {
+            orderId: order.id,
+          },
+        });
         const { refCode } = session.metadata ?? {};
   if (refCode) {
     try {
@@ -267,7 +276,13 @@ export async function POST(req: Request) {
             },
             include: { product: true, user: true },
           });
-
+          await createActivityEntry(sub.userId, {
+            type: "sub_renewed",
+            title: `Auto-reorder active — ${sub.product.name}`,
+            metadata: {
+              productId: sub.productId,
+            },
+          });
           console.log(
             `[webhook] ✅ Subscription created for user ${userId}`
           );

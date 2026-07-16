@@ -35,88 +35,105 @@ export default async function AdminOrderDetailPage({
   );
 
   async function handleStatusUpdate(formData: FormData) {
-  "use server";
-  const itemId = formData.get("itemId") as string;
-  const newStatus = formData.get("status") as string;
-
-  // 1. Update the specific item
-  const item = await prisma.orderItem.update({
-    where: { id: itemId },
-    data: { itemStatus: newStatus as any },
-  });
-
-  // 2. Re-read all items to calculate new order status
-  const allItems = await prisma.orderItem.findMany({
-    where: { orderId: item.orderId },
-  });
-
-  const allDelivered = allItems.every((i) => i.itemStatus === "DELIVERED");
-  const allShipped = allItems.every((i) =>
-    ["SHIPPED", "DELIVERED"].includes(i.itemStatus ?? "")
-  );
-  const allInProduction = allItems.every((i) =>
-    ["IN_PRODUCTION", "SHIPPED", "DELIVERED"].includes(i.itemStatus ?? "")
-  );
-  const anyAwaitingBalance = allItems.some(
-    (i) => i.itemStatus === "AWAITING_BALANCE"
-  );
-
-  const newOrderStatus = allDelivered
-    ? "DELIVERED"
-    : allShipped
-    ? "SHIPPED"
-    : allInProduction
-    ? "IN_PRODUCTION"
-    : anyAwaitingBalance
-    ? "AWAITING_BALANCE"
-    : "PENDING_DEPOSIT";
-
-  // 3. Update order status
-  await prisma.order.update({
-    where: { id: item.orderId },
-    data: { status: newOrderStatus as any },
-  });
-
-  // 4. If marked DELIVERED → create equipment registry entry
-  if (newStatus === "DELIVERED") {
-    const deliveredItem = await prisma.orderItem.findUnique({
+    "use server";
+    const itemId = formData.get("itemId") as string;
+    const newStatus = formData.get("status") as string;
+    const trackingNumber = (formData.get("trackingNumber") as string) || undefined;
+    const trackingUrl = (formData.get("trackingUrl") as string) || undefined;
+  
+    const item = await prisma.orderItem.update({
       where: { id: itemId },
-      include: { order: true },
+      data: { itemStatus: newStatus as any },
+      include: { product: true },
     });
-
-    if (deliveredItem) {
-      // Check if registry entry already exists to avoid duplicates
-      const existing = await prisma.equipmentRegistryItem.findFirst({
-        where: {
-          userId: deliveredItem.order.userId,
-          productId: deliveredItem.productId,
-          orderId: deliveredItem.orderId,
-        },
-      });
-
-      if (!existing) {
-        await prisma.equipmentRegistryItem.create({
-          data: {
-            userId: deliveredItem.order.userId,
-            productId: deliveredItem.productId,
-            orderId: deliveredItem.orderId,
-            installedAt: new Date(),
-            warrantyEndsAt: new Date(
-              Date.now() + 365 * 24 * 60 * 60 * 1000
-            ),
+  
+    const allItems = await prisma.orderItem.findMany({
+      where: { orderId: item.orderId },
+      include: { product: true },
+    });
+  
+    const allDelivered = allItems.every((i) => i.itemStatus === "DELIVERED");
+    const allShipped = allItems.every((i) =>
+      ["SHIPPED", "DELIVERED"].includes(i.itemStatus ?? "")
+    );
+    const allInProduction = allItems.every((i) =>
+      ["IN_PRODUCTION", "SHIPPED", "DELIVERED"].includes(i.itemStatus ?? "")
+    );
+    const anyAwaitingBalance = allItems.some(
+      (i) => i.itemStatus === "AWAITING_BALANCE"
+    );
+  
+    const newOrderStatus = allDelivered
+      ? "DELIVERED"
+      : allShipped
+      ? "SHIPPED"
+      : allInProduction
+      ? "IN_PRODUCTION"
+      : anyAwaitingBalance
+      ? "AWAITING_BALANCE"
+      : "PENDING_DEPOSIT";
+  
+    const updatedOrder = await prisma.order.update({
+      where: { id: item.orderId },
+      data: { status: newOrderStatus as any },
+      include: { user: true, items: { include: { product: true } } },
+    });
+  
+    const ctx = {
+      orderId: updatedOrder.id,
+      userId: updatedOrder.userId,
+      userEmail: updatedOrder.user.email,
+      userName: updatedOrder.user.name,
+      items: updatedOrder.items.map((i) => ({
+        id: i.id,
+        product: { name: i.product.name, slug: i.product.slug },
+        quantity: i.quantity,
+      })),
+    };
+  
+    // Trigger the right email based on the new item status
+    try {
+      if (newStatus === "IN_PRODUCTION") {
+        const { sendInProductionEmail } = await import("@/lib/status-emails");
+        await sendInProductionEmail(ctx);
+      } else if (newStatus === "SHIPPED") {
+        const { sendShippedEmail } = await import("@/lib/status-emails");
+        await sendShippedEmail(ctx, trackingNumber, trackingUrl);
+      } else if (newStatus === "DELIVERED") {
+        const { sendDeliveredEmail } = await import("@/lib/status-emails");
+        await sendDeliveredEmail(ctx);
+  
+        // Equipment registry entry
+        const existing = await prisma.equipmentRegistryItem.findFirst({
+          where: {
+            userId: updatedOrder.userId,
+            productId: item.productId,
+            orderId: item.orderId,
           },
         });
+        if (!existing) {
+          await prisma.equipmentRegistryItem.create({
+            data: {
+              userId: updatedOrder.userId,
+              productId: item.productId,
+              orderId: item.orderId,
+              installedAt: new Date(),
+              warrantyEndsAt: new Date(
+                Date.now() + 365 * 24 * 60 * 60 * 1000
+              ),
+            },
+          });
+        }
       }
+    } catch (emailErr) {
+      console.error("[admin] Status email failed:", emailErr);
+      // Non-blocking — status update succeeded even if email fails
     }
-
-    revalidatePath("/account/equipment");
+  
+    revalidatePath(`/admin/orders/${item.orderId}`);
+    revalidatePath(`/account/orders/${item.orderId}`);
+    revalidatePath("/admin");
   }
-
-  // 5. Revalidate both admin and customer views
-  revalidatePath(`/admin/orders/${item.orderId}`);
-  revalidatePath(`/account/orders/${item.orderId}`);
-  revalidatePath("/admin");
-}
   
   async function handleSendBalance(formData: FormData) {
     "use server";
@@ -182,43 +199,63 @@ export default async function AdminOrderDetailPage({
 
                 {/* Per-item controls for equipment */}
                 {isEquipment && (
-                  <div className="flex items-center gap-3 flex-wrap">
-                    {/* Update item status */}
-                    <form action={handleStatusUpdate} className="flex items-center gap-2">
-                      <input type="hidden" name="itemId" value={item.id} />
-                      <select
-                        name="status"
-                        defaultValue={item.itemStatus ?? "PENDING_DEPOSIT"}
-                        className="border border-border rounded-md text-xs px-2.5 py-1.5 bg-white text-char"
-                      >
-                        {statusOptions.map((s) => (
-                          <option key={s} value={s}>
-                            {s.replace(/_/g, " ")}
-                          </option>
-                        ))}
-                      </select>
-                      <button
-                        type="submit"
-                        className="bg-graphite text-white text-xs px-3 py-1.5 rounded-md"
-                      >
-                        Update
-                      </button>
-                    </form>
+  <div className="space-y-3">
+    <form action={handleStatusUpdate} className="space-y-2">
+      <input type="hidden" name="itemId" value={item.id} />
 
-                    {/* Send balance link — only shown when deposit is paid */}
-                    {item.itemStatus === "AWAITING_BALANCE" && (
-                      <form action={handleSendBalance}>
-                        <input type="hidden" name="itemId" value={item.id} />
-                        <button
-                          type="submit"
-                          className="bg-ember text-white text-xs px-3 py-1.5 rounded-md"
-                        >
-                          Send balance payment link
-                        </button>
-                      </form>
-                    )}
-                  </div>
-                )}
+      <div className="flex items-center gap-2 flex-wrap">
+        <select
+          name="status"
+          defaultValue={item.itemStatus ?? "PENDING_DEPOSIT"}
+          className="border border-border rounded-md text-xs px-2.5 py-1.5 bg-white text-char"
+        >
+          {statusOptions.map((s) => (
+            <option key={s} value={s}>
+              {s.replace(/_/g, " ")}
+            </option>
+          ))}
+        </select>
+
+        <button
+          type="submit"
+          className="bg-graphite text-white text-xs px-3 py-1.5 rounded-md"
+        >
+          Update
+        </button>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        <input
+          name="trackingNumber"
+          placeholder="Tracking number (optional)"
+          className="border border-border rounded-md text-xs px-2.5 py-1.5 text-char placeholder:text-ash"
+        />
+
+        <input
+          name="trackingUrl"
+          placeholder="Tracking URL (optional)"
+          className="border border-border rounded-md text-xs px-2.5 py-1.5 text-char placeholder:text-ash"
+        />
+      </div>
+
+      <p className="text-[10px] text-ash">
+        Tracking fields are included in the shipping email when status is set to SHIPPED.
+      </p>
+    </form>
+
+    {item.itemStatus === "AWAITING_BALANCE" && (
+      <form action={handleSendBalance}>
+        <input type="hidden" name="itemId" value={item.id} />
+        <button
+          type="submit"
+          className="bg-ember text-white text-xs px-3 py-1.5 rounded-md"
+        >
+          Send balance payment link
+        </button>
+      </form>
+    )}
+  </div>
+)}
               </div>
             );
           })}

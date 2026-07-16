@@ -29,9 +29,12 @@ export default function Footer() {
               <Link href="/how-it-works" className="block text-ash hover:text-char transition-colors text-sm">
                 How it works
               </Link>
+              <Link href="/about" className="block text-ash hover:text-char text-sm">About</Link>
+<Link href="/blog" className="block text-ash hover:text-char text-sm">Blog</Link>
               <Link href="/contact" className="block text-ash hover:text-char text-sm">
                 Contact us
               </Link>
+              
             </div>
 
             <div className="space-y-2">

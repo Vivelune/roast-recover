@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
   LayoutDashboard, ClipboardList, Package,
-  ShieldCheck, Users, Factory, MessageSquare, Star, WrenchIcon,
+  ShieldCheck, Users, Factory, MessageSquare, Star, WrenchIcon, FileText, BarChart2,
 } from "lucide-react";
 
 const adminLinks = [
@@ -15,7 +15,9 @@ const adminLinks = [
   { href: "/admin/customers", label: "Customers", icon: Users },
   { href: "/admin/batches", label: "Production", icon: Factory },
   { href: "/admin/testimonials", label: "Testimonials", icon: Star },
+  { href: "/admin/blog", label: "Blog", icon: FileText },
   { href: "/admin/service", label: "Service", icon: WrenchIcon },
+  { href: "/admin/analytics", label: "Analytics", icon: BarChart2 },
 ];
 
 export default async function AdminLayout({
