@@ -4,6 +4,15 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import RoiCalculator from "@/components/RoiCalculator";
 
+
+
+export const metadata = {
+  title: "Why Roast & Recover — Direct Sourcing vs Distributors",
+  description:
+    "See the real price difference between distributor markup and direct factory pricing. Calculate your annual savings with our ROI tool.",
+};
+
+
 const comparisons = [
   {
     category: "Espresso machine (mid-tier commercial)",

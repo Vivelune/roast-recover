@@ -17,6 +17,48 @@ import { StarDisplay } from "@/components/StarRating";
 import AddToEquipmentCartButton from "@/components/AddToEquipmentCartButton";
 import FadeIn from "@/components/FadeIn";
 import QuoteButton from "@/components/QuoteButton";
+import ProductJsonLd from "@/components/ProductJsonLd";
+
+
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const product = await prisma.product.findUnique({
+    where: { slug },
+    include: { certification: true },
+  });
+
+  if (!product) return { title: "Product not found" };
+
+  const deposit = product.depositPercent
+    ? Math.round((product.priceCents * product.depositPercent) / 100)
+    : null;
+
+  return {
+    title: `${product.name} — Commercial Espresso Equipment`,
+    description:
+      product.shortDesc ??
+      `Buy ${product.name} direct from certified factory. ${
+        product.certification
+          ? `${product.certification.type} certified. `
+          : ""
+      }${deposit ? `$${(deposit / 100).toFixed(0)} deposit, balance on completion. ` : ""}${
+        product.leadTimeDays ? `${product.leadTimeDays}-day lead time.` : ""
+      }`.trim(),
+    openGraph: {
+      title: product.name,
+      description: product.shortDesc ?? product.description,
+      images: product.images?.[0]
+        ? [{ url: product.images[0], alt: product.name }]
+        : [],
+    },
+  };
+}
+
 
 // We use a small client-side wrapper in ReviewForm or keep state local if needed.
 // To make this fully functional and spacious, we present a beautiful, stacked layout.
@@ -58,6 +100,16 @@ export default async function EquipmentDetailPage({
   const existingReview = user
     ? product.reviews.find((r) => r.user.email === user.email) ?? null
     : null;
+
+
+<ProductJsonLd
+  name={product.name}
+  description={product.description}
+  image={product.images?.[0]}
+  priceCents={product.priceCents}
+  availability="PreOrder"
+  sku={product.id}
+/>
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-16 space-y-12">

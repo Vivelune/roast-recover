@@ -1,3 +1,7 @@
+
+export const metadata = { title: "Shipping Policy", robots: { index: false } };
+
+
 export default function ShippingPage() {
     return (
       <div className="max-w-3xl mx-auto px-8 py-16">

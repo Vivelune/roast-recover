@@ -73,11 +73,19 @@ export default function NotificationBell({
   }
 
   const typeIcon: Record<string, string> = {
-    order_status: "📦",
+    order_placed: "🛒",
+    deposit_confirmed: "✅",
     balance_due: "💳",
+    balance_confirmed: "✅",
+    order_status: "📦",
+    order_shipped: "🚚",
+    order_delivered: "📦",
+    review_request: "⭐",
     service_ticket: "🔧",
     referral_credit: "🎁",
-    review_request: "⭐",
+    subscription_active: "🔄",
+    subscription_canceled: "❌",
+    warranty_expiring: "⚠️",
   };
 
   return (
@@ -137,56 +145,75 @@ export default function NotificationBell({
                 </div>
               ) : (
                 notifications.map((n) => {
+                  const isExternalLink =
+                    n.href?.startsWith("https://checkout.stripe.com") ||
+                    n.href?.startsWith("http");
+                
                   const inner = (
                     <div
-                      className={`px-4 py-3 hover:bg-steam/20 transition-colors cursor-pointer ${
-                        !n.read ? "bg-ember/[0.02]" : ""
-                      }`}
+                      className={`px-4 py-3 border-b border-border/50 last:border-0 transition-colors ${
+                        !n.read ? "bg-ember/[0.03]" : "hover:bg-steam/30"
+                      } cursor-pointer`}
                       onClick={() => !n.read && markOneRead(n.id)}
                     >
                       <div className="flex items-start gap-3">
                         <span className="text-base shrink-0 mt-0.5">
                           {typeIcon[n.type] ?? "🔔"}
                         </span>
+                
                         <div className="flex-1 min-w-0">
                           <p
                             className={`text-sm tracking-tight leading-snug ${
-                              !n.read
-                                ? "font-semibold text-char"
-                                : "text-ash"
+                              !n.read ? "font-semibold text-char" : "text-ash"
                             }`}
                           >
                             {n.title}
                           </p>
+                
                           <p className="text-xs text-ash mt-0.5 leading-relaxed">
                             {n.body}
                           </p>
+                
+                          {n.type === "balance_due" && n.href && (
+                            <a
+                              href={n.href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="inline-flex items-center gap-1.5 mt-2 bg-ember text-white text-xs px-3 py-1.5 rounded-md hover:bg-ember-dark transition-colors"
+                            >
+                              Pay balance now →
+                            </a>
+                          )}
+                
                           <p className="text-[10px] text-ash/50 mt-1.5 font-medium">
-                            {new Date(n.createdAt).toLocaleDateString(
-                              "en-US",
-                              {
-                                month: "short",
-                                day: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              }
-                            )}
+                            {new Date(n.createdAt).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
                           </p>
                         </div>
+                
                         {!n.read && (
                           <div className="w-1.5 h-1.5 bg-ember rounded-full shrink-0 mt-2" />
                         )}
                       </div>
                     </div>
                   );
-
-                  return n.href ? (
-                    <Link key={n.id} href={n.href}>
-                      {inner}
-                    </Link>
-                  ) : (
-                    <div key={n.id}>{inner}</div>
-                  );
+                
+                  // Internal app links use Next navigation
+                  if (n.href && !isExternalLink && n.type !== "balance_due") {
+                    return (
+                      <Link key={n.id} href={n.href}>
+                        {inner}
+                      </Link>
+                    );
+                  }
+                
+                  // Stripe/external notifications stay normal divs
+                  return <div key={n.id}>{inner}</div>;
                 })
               )}
             </div>

@@ -6,6 +6,14 @@ import PackagingFilters from "@/components/PackagingFilters";
 import { markOnboardingStep } from "@/app/actions/onboarding";
 import StockBadge from "@/components/StockBadge";
 
+export const metadata = {
+  title: "Café Packaging — Cups, Lids & Bags",
+  description:
+    "FDA-compliant cups, lids, and coffee bags for cafés. Order in any quantity, subscribe for auto-reorder. Direct factory pricing.",
+};
+
+
+
 export default async function PackagingPage({
   searchParams,
 }: {
