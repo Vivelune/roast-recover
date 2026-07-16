@@ -8,12 +8,15 @@ import { getReorderInsights } from "@/lib/reorder";
 import ReorderWidget from "@/components/ReorderWidget";
 import { getOrCreateOnboarding } from "@/app/actions/onboarding";
 import OnboardingChecklist from "@/components/OnboardingChecklist";
+import ActivityFeed from "@/components/ActivityFeed";
 
 export default async function AccountPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/sign-in");
 
-  const [orders, equipment, subscriptions, reorderInsights, onboarding] = await Promise.all([
+  const [orders, equipment, subscriptions, reorderInsights, onboarding,activityFeed,] = await Promise.all([
+    
+    
     prisma.order.findMany({
       where: {
         userId: user.id,
@@ -45,6 +48,12 @@ export default async function AccountPage() {
     }),
     getReorderInsights(user.id),
     getOrCreateOnboarding(),
+
+    prisma.activityEntry.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: "desc" },
+      take: 15,
+    }),
   ]);
 
   const stats = [
@@ -125,6 +134,13 @@ export default async function AccountPage() {
           </div>
         )}
       </div>
+
+
+      <div className="mt-8">
+  <p className="text-sm font-medium text-char mb-4">Recent activity</p>
+  <ActivityFeed entries={activityFeed} />
+</div>
+
     </div>
   );
 }

@@ -23,12 +23,13 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import SignOutButton from "./SignOutButton";
 import SearchBar from "./SearchBar";
+import NavNotificationBell from "./NavNotificationBell";
 
 const navLinks = [
   { href: "/equipment", label: "Equipment" },
   { href: "/packaging", label: "Packaging" },
   { href: "/why-roastandrecover", label: "Why us" },
-  { href: "/how-it-works", label: "How it works" },
+  { href: "/blog", label: "Blog" },
   { href: "/contact", label: "Contact" },
 ];
 
@@ -128,6 +129,7 @@ export default function Nav() {
             )}
           </Button>
         </Link>
+
 
         {/* Account dropdown — desktop only */}
         <div className="hidden md:block ml-1">

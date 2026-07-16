@@ -2,6 +2,8 @@ import { getCurrentUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { LayoutDashboard, ClipboardList, Wrench, RefreshCw, MapPin, Building2, Gift, BarChart2 } from "lucide-react";
+import { Suspense } from "react";
+import NavNotificationBell from "@/components/NavNotificationBell";
 
 const sideLinks = [
   { href: "/account", label: "Overview", icon: LayoutDashboard },
@@ -25,9 +27,12 @@ export default async function AccountLayout({
   return (
     <div className="min-h-screen flex">
       <aside className="hidden md:flex flex-col w-56 border-r border-border bg-[#FAFAF9] px-4 py-8 gap-1 shrink-0">
-        <p className="text-xs uppercase tracking-wide text-ash px-3 mb-3">
-          My account
-        </p>
+      <div className="flex items-center justify-between px-3 mb-6">
+  <p className="text-xs uppercase tracking-wide text-gray-400">Account</p>
+  <Suspense fallback={null}>
+    <NavNotificationBell />
+  </Suspense>
+</div>
         {sideLinks.map(({ href, label, icon: Icon }) => (
           <Link
             key={href}
@@ -39,6 +44,12 @@ export default async function AccountLayout({
           </Link>
         ))}
       </aside>
+      <div className="border-b border-border bg-white px-6 py-3 flex items-center justify-between md:hidden">
+  <p className="text-sm font-medium text-char">My Account</p>
+  <Suspense fallback={null}>
+    <NavNotificationBell />
+  </Suspense>
+</div>
       <main className="flex-1 px-6 md:px-10 py-10 max-w-4xl">
         {children}
       </main>

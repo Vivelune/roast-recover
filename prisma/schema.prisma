@@ -103,7 +103,7 @@ model Product {
   images          String[]
   stripePriceId   String?   // Stripe recurring Price ID — subscriptions only
   createdAt       DateTime @default(now())
-
+  updatedAt DateTime @updatedAt
   // 👇 ADD THESE INVERSE RELATIONS
   orderItems      OrderItem[]
   subscriptions   Subscription[]
@@ -459,4 +459,19 @@ model BlogPost {
   seoDesc     String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model PageView {
+  id         String   @id @default(cuid())
+  path       String
+  referrer   String?
+  userAgent  String?
+  country    String?
+  userId     String?  // null for anonymous visitors
+  sessionId  String   // random ID per browser session
+  createdAt  DateTime @default(now())
+
+  @@index([path])
+  @@index([createdAt])
+  @@index([sessionId])
 }
