@@ -1,0 +1,14 @@
+{
+    "name": "Roast & Recover",
+    "short_name": "R&R",
+    "description": "Certified café equipment and packaging, direct from source",
+    "icons": [
+      { "src": "/favicon-16x16.png", "sizes": "16x16", "type": "image/png" },
+      { "src": "/favicon-32x32.png", "sizes": "32x32", "type": "image/png" },
+      { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+    ],
+    "theme_color": "#0E0B08",
+    "background_color": "#F2EDE6",
+    "display": "standalone",
+    "start_url": "/"
+  }

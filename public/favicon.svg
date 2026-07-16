@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Dark background -->
+  <rect width="32" height="32" rx="7" fill="#0E0B08"/>
+  <!-- Ember "R" letterform — simplified geometric -->
+  <rect x="8" y="8" width="3" height="16" fill="#F2EDE6" rx="1"/>
+  <path d="M11 8 h5 a4 4 0 0 1 0 8 h-5z" fill="#F2EDE6"/>
+  <path d="M14 16 l4 8" stroke="#B5481F" stroke-width="3"
+    stroke-linecap="round" fill="none"/>
+</svg>

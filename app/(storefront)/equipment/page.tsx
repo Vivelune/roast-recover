@@ -5,6 +5,14 @@ import { ShieldCheck, SlidersHorizontal } from "lucide-react";
 import FadeIn from "@/components/FadeIn";
 import EquipmentFilters from "@/components/EquipmentFilters";
 
+
+export const metadata = {
+  title: "Commercial Espresso Machines & Grinders",
+  description:
+    "Buy certified commercial espresso machines and grinders direct from source. UL/NSF certified, build-to-order, 30–40% below typical distributor pricing.",
+};
+
+
 export default async function EquipmentPage({
   searchParams,
 }: {

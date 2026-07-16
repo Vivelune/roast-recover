@@ -2,6 +2,14 @@ import FadeIn from "@/components/FadeIn";
 import Link from "next/link";
 import { ArrowRight, Globe, ShieldCheck, Zap } from "lucide-react";
 
+
+export const metadata = {
+  title: "About Roast & Recover",
+  description:
+    "We built the café equipment supplier we always wished existed. Direct sourcing, verified certifications, no middlemen.",
+};
+
+
 export default function AboutPage() {
   return (
     <div>

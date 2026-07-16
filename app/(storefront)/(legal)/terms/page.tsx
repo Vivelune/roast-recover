@@ -1,4 +1,11 @@
+export const metadata = { title: "Terms of Service", robots: { index: false } };
+
+
+
 export default function TermsPage() {
+
+
+  
     return (
       <div className="max-w-3xl mx-auto px-8 py-16">
         <p className="text-xs uppercase tracking-wide text-ember mb-2">Legal</p>

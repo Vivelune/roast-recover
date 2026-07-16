@@ -14,6 +14,38 @@ import { StarDisplay } from "@/components/StarRating";
 import { getCurrentUser } from "@/lib/auth";
 import FadeIn from "@/components/FadeIn";
 import StockBadge from "@/components/StockBadge";
+import ProductJsonLd from "@/components/ProductJsonLd";
+
+
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const product = await prisma.product.findUnique({ where: { slug } });
+  if (!product) return { title: "Product not found" };
+
+  return {
+    title: `${product.name} — Café Packaging`,
+    description:
+      product.shortDesc ??
+      `${product.name}${product.packageSize ? ` (${product.packageSize})` : ""}${
+        product.material ? `, ${product.material}` : ""
+      }${product.caseQty ? `, ${product.caseQty} per case` : ""}. FDA food-contact compliant. Direct factory pricing.`,
+    openGraph: {
+      title: product.name,
+      description: product.shortDesc ?? product.description,
+      images: product.images?.[0]
+        ? [{ url: product.images[0], alt: product.name }]
+        : [],
+    },
+  };
+}
+
+
+
 
 export default async function PackagingDetailPage({
   params,
@@ -44,6 +76,18 @@ export default async function PackagingDetailPage({
   const existingReview = user
     ? product.reviews.find((r) => r.user.email === user.email) ?? null
     : null;
+
+
+<ProductJsonLd
+  name={product.name}
+  description={product.description}
+  image={product.images?.[0]}
+  priceCents={product.priceCents}
+  availability={product.stockQty === 0 ? "OutOfStock" : "InStock"}
+  sku={product.id}
+/>
+
+
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-16 space-y-16">

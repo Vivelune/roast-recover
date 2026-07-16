@@ -1,3 +1,6 @@
+export const metadata = { title: "Returns & Warranty Policy", robots: { index: false } };
+
+
 export default function ReturnsPage() {
     return (
       <div className="max-w-3xl mx-auto px-8 py-16">

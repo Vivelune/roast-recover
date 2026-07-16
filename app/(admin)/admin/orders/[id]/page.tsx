@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createBalanceCheckoutForItem } from "@/app/actions/equipment-checkout";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { notifyAndLog } from "@/lib/notifications";
 
 const itemStatusLabel: Record<string, string> = {
   PENDING_DEPOSIT: "Awaiting deposit",
@@ -136,8 +137,52 @@ export default async function AdminOrderDetailPage({
     "use server";
     const itemId = formData.get("itemId") as string;
     const result = await createBalanceCheckoutForItem(itemId);
-    console.log(`[admin] Balance URL for item ${itemId}:`, result.checkoutUrl);
+  
+    // Get order context for notification
+    const item = await prisma.orderItem.findUnique({
+      where: { id: itemId },
+      include: {
+        product: true,
+        order: { include: { user: true } },
+      },
+    });
+  
+    if (item) {
+      const depositPerUnit = Math.round(
+        (item.unitPriceCents * (item.depositPercent ?? 0)) / 100
+      );
+      const balancePerUnit = item.unitPriceCents - depositPerUnit;
+      const totalBalance = balancePerUnit * item.quantity;
+  
+      // Notify the customer with the payment link
+      await notifyAndLog(
+        item.order.userId,
+        {
+          type: "balance_due",
+          title: `Balance payment due — ${item.product.name}`,
+          body: `$${(totalBalance / 100).toFixed(2)} balance is due. Your machine is ready to ship once payment is received. Click to pay now.`,
+          href: result.checkoutUrl ?? `/account/orders/${item.orderId}`,
+        },
+        {
+          type: "balance_due",
+          title: `Balance payment link sent for ${item.product.name}`,
+          metadata: {
+            orderId: item.orderId,
+            balanceCents: totalBalance,
+            checkoutUrl: result.checkoutUrl,
+          },
+        }
+      );
+  
+      // Also log it in admin console as fallback
+      console.log(
+        `[admin] Balance URL for item ${itemId}:`,
+        result.checkoutUrl
+      );
+    }
+  
     revalidatePath(`/admin/orders/${id}`);
+    revalidatePath(`/account/orders/${item?.orderId ?? ""}`);
   }
 
   const statusOptions = [

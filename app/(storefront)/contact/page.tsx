@@ -1,6 +1,15 @@
 import ContactForm from "@/components/ContactForm";
 import { Mail, Clock, MessageSquare } from "lucide-react";
 
+
+
+export const metadata = {
+  title: "Contact Us — Get a Custom Quote",
+  description:
+    "Talk to us about equipment orders, volume pricing, or packaging needs. We respond within 1 business day.",
+};
+
+
 export default function ContactPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">

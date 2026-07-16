@@ -1,6 +1,12 @@
 import FadeIn from "@/components/FadeIn";
 import { ShieldCheck, Factory, FileCheck2, Ship, PackageCheck, RefreshCw } from "lucide-react";
 
+export const metadata = {
+  title: "How It Works — Build-to-Order Café Equipment",
+  description:
+    "Understand our deposit/balance model, certification process, and how equipment ships from factory to your café.",
+};
+
 export default function HowItWorksPage() {
   return (
     <div className="max-w-4xl mx-auto px-8 py-20">

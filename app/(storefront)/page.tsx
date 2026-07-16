@@ -6,6 +6,33 @@ import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import TestimonialCard from "@/components/TestimonialCard";
 
+
+
+const orgSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Roast & Recover LLC",
+  url: process.env.NEXT_PUBLIC_URL,
+  logo: `${process.env.NEXT_PUBLIC_URL}/logo.png`,
+  contactPoint: {
+    "@type": "ContactPoint",
+    email: "ritual@roastandrecover.com",
+    contactType: "customer service",
+  },
+  sameAs: [
+    "https://linkedin.com/company/roastandrecover",
+  ],
+};
+
+
+
+export const metadata = {
+  title: "Direct from Source — Café Equipment & Packaging",
+  description:
+    "Certified commercial espresso machines, grinders, and café packaging sourced direct from factory. No distributor markup. UL and NSF certified.",
+};
+
+
 export default async function HomePage() {
   const testimonials = await prisma.testimonial.findMany({
     where: { active: true },
@@ -14,7 +41,13 @@ export default async function HomePage() {
   });
 
   return (
+    
+    
     <div className="overflow-x-hidden">
+      <script
+  type="application/ld+json"
+  dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }}
+/>
       {/* HERO */}
       <section className="relative bg-steam overflow-hidden">
         {/* Background blobs - hidden on tiny screens to avoid layout overflow issues */}
