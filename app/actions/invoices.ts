@@ -60,10 +60,14 @@ export async function generateAndStoreInvoice(orderId: string) {
   });
 
   // Upload to Uploadthing
-  const blob = new Blob([pdfBuffer], { type: "application/pdf" });
-  const file = new File([blob], `invoice-${invoiceNum}.pdf`, {
+// Upload to Uploadthing
+const file = new File(
+  [new Uint8Array(pdfBuffer)],
+  `invoice-${invoiceNum}.pdf`,
+  {
     type: "application/pdf",
-  });
+  }
+);
 
   const uploaded = await utapi.uploadFiles(file);
   const pdfUrl = uploaded.data?.ufsUrl;
