@@ -49,64 +49,79 @@ export default async function HomePage() {
   dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }}
 />
       {/* HERO */}
-      <section className="relative bg-steam overflow-hidden">
-        {/* Background blobs - hidden on tiny screens to avoid layout overflow issues */}
-        <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-ember/5 pointer-events-none hidden sm:block" />
-        <div className="absolute top-40 -left-32 w-72 h-72 rounded-full bg-ash/5 pointer-events-none hidden sm:block" />
+<section className="relative bg-steam overflow-hidden">
+  <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-ember/5 pointer-events-none hidden sm:block" />
+  <div className="absolute top-40 -left-32 w-72 w-72 rounded-full bg-ash/5 pointer-events-none hidden sm:block" />
 
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-28 grid grid-cols-1 md:grid-cols-2 gap-12 items-center relative">
-          <div className="text-center md:text-left flex flex-col items-center md:items-start">
-            <FadeIn>
-            <p className="text-xs uppercase tracking-[0.15em] text-ember font-medium mb-4">
-  Roast and Recover
-</p>
-            </FadeIn>
-            <FadeIn delay={0.1}>
-              <h1 className="font-display font-semibold text-3xl sm:text-4xl md:text-5xl leading-[1.1] text-char mb-5 tracking-tight">
-                Direct from source.<br className="hidden sm:inline" />Built for your café.
-              </h1>
-            </FadeIn>
-            <FadeIn delay={0.2}>
-            <p className="text-ash text-sm sm:text-[15px] leading-relaxed mb-8 max-w-md mx-auto md:mx-0">
-  Roast and Recover is a US-based café supply company helping coffee businesses
-  source certified espresso machines, grinders, cups, and packaging directly
-  from verified factories.
-</p>
-            </FadeIn>
-            <FadeIn delay={0.3}>
-              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                <Link
-                  href="/equipment"
-                  className="group bg-ember hover:bg-ember-dark text-white px-6 py-3 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                >
-                  Shop equipment
-                  <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
-                </Link>
-                <Link
-                  href="/packaging"
-                  className="bg-white border border-gray-200 text-char px-6 py-3 rounded-md text-sm font-medium hover:border-gray-300 transition-colors flex items-center justify-center"
-                >
-                  Shop packaging
-                </Link>
-              </div>
-            </FadeIn>
-          </div>
+  <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-28 grid grid-cols-1 md:grid-cols-2 gap-12 items-center relative">
 
-          <div className="w-full max-w-md mx-auto md:max-w-none">
-            <FadeIn delay={0.15} y={24}>
-              <div className="relative bg-white/70 border border-white rounded-2xl aspect-square shadow-sm overflow-hidden">
-                <Image
-                  src="/landingpage.png"
-                  alt="Commercial espresso machine"
-                  fill
-                  priority
-                  className="object-cover rounded-2xl"
-                />
-              </div>
-            </FadeIn>
-          </div>
+    <div className="text-center md:text-left flex flex-col items-center md:items-start">
+
+      <FadeIn>
+        <p className="text-xs uppercase tracking-[0.15em] text-ember font-medium mb-4">
+          Roast and Recover
+        </p>
+      </FadeIn>
+
+      <FadeIn delay={0.1}>
+        <h1 className="font-display font-semibold text-3xl sm:text-4xl md:text-5xl leading-[1.1] text-char mb-5 tracking-tight">
+          Certified café equipment.<br className="hidden sm:inline" />
+          Direct from verified factories.
+        </h1>
+      </FadeIn>
+
+      <FadeIn delay={0.2}>
+        <p className="text-ash text-sm sm:text-[15px] leading-relaxed mb-4 max-w-md mx-auto md:mx-0">
+          Roast and Recover is a US-based café equipment and packaging platform
+          helping coffee businesses source espresso machines, grinders, cups,
+          and supplies directly from certified manufacturers.
+        </p>
+      </FadeIn>
+
+      <FadeIn delay={0.25}>
+        <p className="text-ash text-sm sm:text-[15px] leading-relaxed mb-8 max-w-md mx-auto md:mx-0">
+          Customers can create an account to manage orders, track purchases,
+          and access their café supply information securely.
+        </p>
+      </FadeIn>
+
+      <FadeIn delay={0.3}>
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <Link
+            href="/equipment"
+            className="group bg-ember hover:bg-ember-dark text-white px-6 py-3 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2"
+          >
+            Shop equipment
+            <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
+          </Link>
+
+          <Link
+            href="/packaging"
+            className="bg-white border border-gray-200 text-char px-6 py-3 rounded-md text-sm font-medium hover:border-gray-300 transition-colors flex items-center justify-center"
+          >
+            Shop packaging
+          </Link>
         </div>
-      </section>
+      </FadeIn>
+
+    </div>
+
+    <div className="w-full max-w-md mx-auto md:max-w-none">
+      <FadeIn delay={0.15} y={24}>
+        <div className="relative bg-white/70 border border-white rounded-2xl aspect-square shadow-sm overflow-hidden">
+          <Image
+            src="/landingpage.png"
+            alt="Roast and Recover commercial espresso equipment"
+            fill
+            priority
+            className="object-cover rounded-2xl"
+          />
+        </div>
+      </FadeIn>
+    </div>
+
+  </div>
+</section>
 
       {/* TRUST STRIP */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
