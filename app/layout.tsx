@@ -4,7 +4,7 @@ import StoreHydration from "@/components/StoreHydration";
 import PageTracker from "@/components/PageTracker";
 import "./globals.css";
 import Footer from "@/components/Footer";
-import { Analytics } from "@vercel/analytics/react";
+import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Suspense } from "react";
 import { Metadata } from "next";
