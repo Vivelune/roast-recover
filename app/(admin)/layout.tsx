@@ -1,11 +1,13 @@
-"use client";
+
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { redirect, usePathname } from "next/navigation";
 import {
   LayoutDashboard, ClipboardList, Package,
   ShieldCheck, Users, Factory, MessageSquare, Star, WrenchIcon, FileText, BarChart2, Menu, X
 } from "lucide-react";
+import { currentUser } from "@clerk/nextjs/server";
+import { prisma } from "@/lib/prisma";
 
 const adminLinks = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard },
@@ -21,11 +23,34 @@ const adminLinks = [
   { href: "/admin/analytics", label: "Analytics", icon: BarChart2 },
 ];
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+
+
+  const clerkUser = await currentUser();
+
+  if (!clerkUser) {
+    redirect("/sign-in");
+  }
+
+
+  const user = await prisma.user.findUnique({
+    where: {
+      clerkId: clerkUser.id,
+    },
+    select: {
+      role: true,
+    },
+  });
+
+
+  if (!user || user.role !== "ADMIN") {
+    redirect("/");
+  }
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
 
