@@ -27,9 +27,9 @@ const orgSchema = {
 
 
 export const metadata = {
-  title: "Direct from Source — Café Equipment & Packaging",
+  title: "Roast and Recover — Café Equipment & Packaging Direct from Source",
   description:
-    "Certified commercial espresso machines, grinders, and café packaging sourced direct from factory. No distributor markup. UL and NSF certified.",
+    "Roast and Recover helps cafés source certified espresso machines, grinders, cups, and packaging directly from verified factories.",
 };
 
 
@@ -57,10 +57,9 @@ export default async function HomePage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-28 grid grid-cols-1 md:grid-cols-2 gap-12 items-center relative">
           <div className="text-center md:text-left flex flex-col items-center md:items-start">
             <FadeIn>
-              <p className="text-xs uppercase tracking-[0.15em] text-ember font-medium mb-4 flex items-center justify-center md:justify-start gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-ember inline-block" />
-                Certified equipment &amp; packaging
-              </p>
+            <p className="text-xs uppercase tracking-[0.15em] text-ember font-medium mb-4">
+  Roast and Recover
+</p>
             </FadeIn>
             <FadeIn delay={0.1}>
               <h1 className="font-display font-semibold text-3xl sm:text-4xl md:text-5xl leading-[1.1] text-char mb-5 tracking-tight">
@@ -68,11 +67,11 @@ export default async function HomePage() {
               </h1>
             </FadeIn>
             <FadeIn delay={0.2}>
-              <p className="text-ash text-sm sm:text-[15px] leading-relaxed mb-8 max-w-md mx-auto md:mx-0">
-                Espresso machines, grinders, cups, and bags — sourced from certified
-                factories and shipped to your café, without the distributor markup
-                in between.
-              </p>
+            <p className="text-ash text-sm sm:text-[15px] leading-relaxed mb-8 max-w-md mx-auto md:mx-0">
+  Roast and Recover is a US-based café supply company helping coffee businesses
+  source certified espresso machines, grinders, cups, and packaging directly
+  from verified factories.
+</p>
             </FadeIn>
             <FadeIn delay={0.3}>
               <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
