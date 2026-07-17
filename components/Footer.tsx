@@ -9,7 +9,7 @@ export default function Footer() {
           {/* Brand Info Block */}
           <div className="lg:col-span-2 space-y-4">
             <p className="font-display font-semibold text-lg text-char tracking-tight">
-              roast<span className="text-ember">&amp;</span>recover
+              Roast<span className="text-ember">and</span> Recover
             </p>
             <p className="text-sm text-ash max-w-sm leading-relaxed">
               Certified café equipment and packaging, sourced direct

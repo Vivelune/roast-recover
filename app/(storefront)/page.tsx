@@ -11,7 +11,7 @@ import TestimonialCard from "@/components/TestimonialCard";
 const orgSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "Roast & Recover LLC",
+  name: "Roast and Recover LLC",
   url: process.env.NEXT_PUBLIC_URL,
   logo: `${process.env.NEXT_PUBLIC_URL}/logo.png`,
   contactPoint: {
@@ -208,6 +208,35 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ACCOUNT & APP PURPOSE */}
+<section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 border-t border-gray-100">
+  <FadeIn>
+    <div className="max-w-3xl">
+      <p className="text-xs uppercase tracking-[0.15em] text-ember font-medium mb-3">
+        Roast and Recover platform
+      </p>
+
+      <h2 className="font-display font-semibold text-2xl sm:text-3xl text-char mb-5 tracking-tight">
+        A secure account platform for café equipment sourcing.
+      </h2>
+
+      <p className="text-ash text-sm sm:text-[15px] leading-relaxed mb-4">
+        Roast and Recover allows café owners and coffee businesses to discover,
+        purchase, and manage commercial equipment and packaging sourced from
+        verified manufacturers.
+      </p>
+
+      <p className="text-ash text-sm sm:text-[15px] leading-relaxed mb-4">
+        Users can create an account to manage their profile, view order history,
+        track purchases, and receive updates about their equipment and packaging
+        requests.
+      </p>
+
+    
+    </div>
+  </FadeIn>
+</section>
 
       {/* STATS BAND */}
       <section className="bg-graphite py-12 sm:py-16">
