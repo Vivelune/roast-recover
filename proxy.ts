@@ -30,8 +30,9 @@ export default clerkMiddleware(async (auth, req) => {
 
     // Signed in but not admin
     const role = (sessionClaims?.publicMetadata as any)?.role;
+    console.log("ROLE FROM CLERK:", role);
     if (role !== "ADMIN") {
-      console.log(role)
+     
       // Redirect to account page — don't reveal admin exists
       return NextResponse.redirect(new URL("/account", req.url));
     }
