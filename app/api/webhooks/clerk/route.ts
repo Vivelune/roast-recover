@@ -1,82 +1,68 @@
+import { WebhookEvent } from "@clerk/nextjs/server";
 import { headers } from "next/headers";
 import { Webhook } from "svix";
 import { prisma } from "@/lib/prisma";
+import { clerkClient } from "@clerk/nextjs/server";
 
 export async function POST(req: Request) {
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
-
   if (!WEBHOOK_SECRET) {
-    return new Response("Missing webhook secret", {
-      status: 500,
-    });
+    return new Response("Clerk webhook secret not configured", { status: 500 });
+  }
+
+  const headerPayload = await headers();
+  const svix_id = headerPayload.get("svix-id");
+  const svix_timestamp = headerPayload.get("svix-timestamp");
+  const svix_signature = headerPayload.get("svix-signature");
+
+  if (!svix_id || !svix_timestamp || !svix_signature) {
+    return new Response("Missing svix headers", { status: 400 });
   }
 
   const payload = await req.json();
-
-  const headerPayload = await headers();
-
-  const svixHeaders = {
-    "svix-id": headerPayload.get("svix-id")!,
-    "svix-timestamp": headerPayload.get("svix-timestamp")!,
-    "svix-signature": headerPayload.get("svix-signature")!,
-  };
-
+  const body = JSON.stringify(payload);
 
   const wh = new Webhook(WEBHOOK_SECRET);
-
-  let event;
+  let event: WebhookEvent;
 
   try {
-    event = wh.verify(
-      JSON.stringify(payload),
-      svixHeaders
-    ) as {
-      type: string;
-      data: any;
-    };
+    event = wh.verify(body, {
+      "svix-id": svix_id,
+      "svix-timestamp": svix_timestamp,
+      "svix-signature": svix_signature,
+    }) as WebhookEvent;
   } catch {
-    return new Response("Invalid webhook", {
-      status: 400,
+    return new Response("Invalid webhook signature", { status: 400 });
+  }
+
+  // User created — upsert into DB
+  if (event.type === "user.created" || event.type === "user.updated") {
+    const {
+      id: clerkId,
+      email_addresses,
+      first_name,
+      last_name,
+    } = event.data;
+
+    const email = email_addresses[0]?.email_address;
+    if (!email) return new Response("No email", { status: 400 });
+
+    const name =
+      [first_name, last_name].filter(Boolean).join(" ") || null;
+
+    const user = await prisma.user.upsert({
+      where: { email },
+      update: { name },
+      create: { email, name, clerkId },
+    });
+
+    // Sync the DB role back into Clerk session claims
+    // This is what the middleware reads
+    const client = await clerkClient();
+    await client.users.updateUserMetadata(clerkId, {
+      publicMetadata: { role: user.role },
     });
   }
 
-
-  if (event.type === "user.created") {
-    const user = event.data;
-
-
-    try {
-      await prisma.user.create({
-        data: {
-          clerkId: user.id,
-          email: user.email_addresses[0].email_address,
-          name: `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim(),
-        },
-      });
-    } catch (err) {
-      console.error(err);
-      return new Response("Database error", { status: 500 });
-    }
-  }
-
-
-  if (event.type === "user.updated") {
-    const user = event.data;
-
-    await prisma.user.update({
-      where: {
-        clerkId: user.id,
-      },
-      data: {
-        email: user.email_addresses[0].email_address,
-        name:
-          `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim(),
-      },
-    });
-  }
-
-
-  return Response.json({
-    success: true,
-  });
+  return new Response("ok", { status: 200 });
 }
