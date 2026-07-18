@@ -22,15 +22,16 @@ export default clerkMiddleware(async (auth, req) => {
   // This check runs at the edge — before ANY page code executes
   if (isAdminRoute(req)) {
     const { sessionClaims, redirectToSignIn } = await auth();
-
+    
     // Not signed in at all
     if (!sessionClaims) {
       return redirectToSignIn({ returnBackUrl: req.url });
     }
 
     // Signed in but not admin
-    const role = (sessionClaims?.metadata as any)?.role;
+    const role = (sessionClaims?.publicMetadata as any)?.role;
     if (role !== "ADMIN") {
+      console.log(role)
       // Redirect to account page — don't reveal admin exists
       return NextResponse.redirect(new URL("/account", req.url));
     }
