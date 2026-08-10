@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Search } from "lucide-react";
+import Link from "next/link";
 
 interface Lead {
   id: string;
@@ -121,8 +122,10 @@ export default function LeadsPage() {
                 {filtered.map((lead) => (
                   <TableRow key={lead.id}>
                     <TableCell className="font-medium text-char">
-                      {lead.company ?? "—"}
-                    </TableCell>
+                    <Link href={`/admin/outreach/leads/${lead.id}`} className="text-ember hover:underline">
+                      {lead.company ?? lead.email}
+                    </Link>
+                  </TableCell>
                     <TableCell className="text-ash">{lead.name ?? "—"}</TableCell>
                     <TableCell className="text-ash truncate max-w-[180px]">
                       {lead.email}
