@@ -69,3 +69,34 @@ export const CompanyRole = {
 } as const
 
 export type CompanyRole = (typeof CompanyRole)[keyof typeof CompanyRole]
+
+
+export const OutreachStatus = {
+  NEW: 'NEW',
+  CONTACTED: 'CONTACTED',
+  OPENED: 'OPENED',
+  REPLIED: 'REPLIED',
+  CONVERTED: 'CONVERTED',
+  UNSUBSCRIBED: 'UNSUBSCRIBED',
+  DEAD: 'DEAD'
+} as const
+
+export type OutreachStatus = (typeof OutreachStatus)[keyof typeof OutreachStatus]
+
+
+export const OutreachEmailStatus = {
+  PENDING: 'PENDING',
+  SENT: 'SENT',
+  FAILED: 'FAILED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type OutreachEmailStatus = (typeof OutreachEmailStatus)[keyof typeof OutreachEmailStatus]
+
+
+export const OutreachEmailEventType = {
+  OPEN: 'OPEN',
+  CLICK: 'CLICK'
+} as const
+
+export type OutreachEmailEventType = (typeof OutreachEmailEventType)[keyof typeof OutreachEmailEventType]

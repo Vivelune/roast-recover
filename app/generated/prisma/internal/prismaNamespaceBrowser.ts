@@ -75,7 +75,11 @@ export const ModelName = {
   Notification: 'Notification',
   ActivityEntry: 'ActivityEntry',
   BlogPost: 'BlogPost',
-  PageView: 'PageView'
+  PageView: 'PageView',
+  Outreach: 'Outreach',
+  Campaign: 'Campaign',
+  OutreachScheduledEmail: 'OutreachScheduledEmail',
+  OutreachEmailEvent: 'OutreachEmailEvent'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -466,6 +470,61 @@ export const PageViewScalarFieldEnum = {
 } as const
 
 export type PageViewScalarFieldEnum = (typeof PageViewScalarFieldEnum)[keyof typeof PageViewScalarFieldEnum]
+
+
+export const OutreachScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  name: 'name',
+  company: 'company',
+  phone: 'phone',
+  source: 'source',
+  status: 'status',
+  unsubscribed: 'unsubscribed',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OutreachScalarFieldEnum = (typeof OutreachScalarFieldEnum)[keyof typeof OutreachScalarFieldEnum]
+
+
+export const CampaignScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  createdAt: 'createdAt'
+} as const
+
+export type CampaignScalarFieldEnum = (typeof CampaignScalarFieldEnum)[keyof typeof CampaignScalarFieldEnum]
+
+
+export const OutreachScheduledEmailScalarFieldEnum = {
+  id: 'id',
+  leadId: 'leadId',
+  campaignId: 'campaignId',
+  subject: 'subject',
+  body: 'body',
+  scheduledAt: 'scheduledAt',
+  sentAt: 'sentAt',
+  status: 'status',
+  failReason: 'failReason',
+  parentEmailId: 'parentEmailId',
+  trackingId: 'trackingId',
+  createdAt: 'createdAt'
+} as const
+
+export type OutreachScheduledEmailScalarFieldEnum = (typeof OutreachScheduledEmailScalarFieldEnum)[keyof typeof OutreachScheduledEmailScalarFieldEnum]
+
+
+export const OutreachEmailEventScalarFieldEnum = {
+  id: 'id',
+  scheduledEmailId: 'scheduledEmailId',
+  type: 'type',
+  url: 'url',
+  timestamp: 'timestamp'
+} as const
+
+export type OutreachEmailEventScalarFieldEnum = (typeof OutreachEmailEventScalarFieldEnum)[keyof typeof OutreachEmailEventScalarFieldEnum]
 
 
 export const SortOrder = {

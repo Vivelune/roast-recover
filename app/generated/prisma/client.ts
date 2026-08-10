@@ -166,3 +166,23 @@ export type BlogPost = Prisma.BlogPostModel
  * 
  */
 export type PageView = Prisma.PageViewModel
+/**
+ * Model Outreach
+ * 
+ */
+export type Outreach = Prisma.OutreachModel
+/**
+ * Model Campaign
+ * 
+ */
+export type Campaign = Prisma.CampaignModel
+/**
+ * Model OutreachScheduledEmail
+ * 
+ */
+export type OutreachScheduledEmail = Prisma.OutreachScheduledEmailModel
+/**
+ * Model OutreachEmailEvent
+ * 
+ */
+export type OutreachEmailEvent = Prisma.OutreachEmailEventModel

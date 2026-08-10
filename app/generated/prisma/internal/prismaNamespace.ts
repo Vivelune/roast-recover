@@ -408,7 +408,11 @@ export const ModelName = {
   Notification: 'Notification',
   ActivityEntry: 'ActivityEntry',
   BlogPost: 'BlogPost',
-  PageView: 'PageView'
+  PageView: 'PageView',
+  Outreach: 'Outreach',
+  Campaign: 'Campaign',
+  OutreachScheduledEmail: 'OutreachScheduledEmail',
+  OutreachEmailEvent: 'OutreachEmailEvent'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -424,7 +428,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "company" | "address" | "product" | "certification" | "order" | "orderItem" | "subscription" | "equipmentRegistryItem" | "productionBatch" | "review" | "lead" | "testimonial" | "companyMember" | "serviceLog" | "serviceTicket" | "invoice" | "referralCode" | "referral" | "storeCredit" | "onboardingProgress" | "notification" | "activityEntry" | "blogPost" | "pageView"
+    modelProps: "user" | "company" | "address" | "product" | "certification" | "order" | "orderItem" | "subscription" | "equipmentRegistryItem" | "productionBatch" | "review" | "lead" | "testimonial" | "companyMember" | "serviceLog" | "serviceTicket" | "invoice" | "referralCode" | "referral" | "storeCredit" | "onboardingProgress" | "notification" | "activityEntry" | "blogPost" | "pageView" | "outreach" | "campaign" | "outreachScheduledEmail" | "outreachEmailEvent"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2278,6 +2282,302 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Outreach: {
+      payload: Prisma.$OutreachPayload<ExtArgs>
+      fields: Prisma.OutreachFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.OutreachFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.OutreachFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachPayload>
+        }
+        findFirst: {
+          args: Prisma.OutreachFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.OutreachFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachPayload>
+        }
+        findMany: {
+          args: Prisma.OutreachFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachPayload>[]
+        }
+        create: {
+          args: Prisma.OutreachCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachPayload>
+        }
+        createMany: {
+          args: Prisma.OutreachCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.OutreachCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachPayload>[]
+        }
+        delete: {
+          args: Prisma.OutreachDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachPayload>
+        }
+        update: {
+          args: Prisma.OutreachUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachPayload>
+        }
+        deleteMany: {
+          args: Prisma.OutreachDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.OutreachUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.OutreachUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachPayload>[]
+        }
+        upsert: {
+          args: Prisma.OutreachUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachPayload>
+        }
+        aggregate: {
+          args: Prisma.OutreachAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOutreach>
+        }
+        groupBy: {
+          args: Prisma.OutreachGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OutreachGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.OutreachCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OutreachCountAggregateOutputType> | number
+        }
+      }
+    }
+    Campaign: {
+      payload: Prisma.$CampaignPayload<ExtArgs>
+      fields: Prisma.CampaignFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CampaignFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CampaignPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CampaignFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CampaignPayload>
+        }
+        findFirst: {
+          args: Prisma.CampaignFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CampaignPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CampaignFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CampaignPayload>
+        }
+        findMany: {
+          args: Prisma.CampaignFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CampaignPayload>[]
+        }
+        create: {
+          args: Prisma.CampaignCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CampaignPayload>
+        }
+        createMany: {
+          args: Prisma.CampaignCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CampaignCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CampaignPayload>[]
+        }
+        delete: {
+          args: Prisma.CampaignDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CampaignPayload>
+        }
+        update: {
+          args: Prisma.CampaignUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CampaignPayload>
+        }
+        deleteMany: {
+          args: Prisma.CampaignDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CampaignUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CampaignUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CampaignPayload>[]
+        }
+        upsert: {
+          args: Prisma.CampaignUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CampaignPayload>
+        }
+        aggregate: {
+          args: Prisma.CampaignAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCampaign>
+        }
+        groupBy: {
+          args: Prisma.CampaignGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CampaignGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CampaignCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CampaignCountAggregateOutputType> | number
+        }
+      }
+    }
+    OutreachScheduledEmail: {
+      payload: Prisma.$OutreachScheduledEmailPayload<ExtArgs>
+      fields: Prisma.OutreachScheduledEmailFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.OutreachScheduledEmailFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachScheduledEmailPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.OutreachScheduledEmailFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachScheduledEmailPayload>
+        }
+        findFirst: {
+          args: Prisma.OutreachScheduledEmailFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachScheduledEmailPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.OutreachScheduledEmailFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachScheduledEmailPayload>
+        }
+        findMany: {
+          args: Prisma.OutreachScheduledEmailFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachScheduledEmailPayload>[]
+        }
+        create: {
+          args: Prisma.OutreachScheduledEmailCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachScheduledEmailPayload>
+        }
+        createMany: {
+          args: Prisma.OutreachScheduledEmailCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.OutreachScheduledEmailCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachScheduledEmailPayload>[]
+        }
+        delete: {
+          args: Prisma.OutreachScheduledEmailDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachScheduledEmailPayload>
+        }
+        update: {
+          args: Prisma.OutreachScheduledEmailUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachScheduledEmailPayload>
+        }
+        deleteMany: {
+          args: Prisma.OutreachScheduledEmailDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.OutreachScheduledEmailUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.OutreachScheduledEmailUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachScheduledEmailPayload>[]
+        }
+        upsert: {
+          args: Prisma.OutreachScheduledEmailUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachScheduledEmailPayload>
+        }
+        aggregate: {
+          args: Prisma.OutreachScheduledEmailAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOutreachScheduledEmail>
+        }
+        groupBy: {
+          args: Prisma.OutreachScheduledEmailGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OutreachScheduledEmailGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.OutreachScheduledEmailCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OutreachScheduledEmailCountAggregateOutputType> | number
+        }
+      }
+    }
+    OutreachEmailEvent: {
+      payload: Prisma.$OutreachEmailEventPayload<ExtArgs>
+      fields: Prisma.OutreachEmailEventFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.OutreachEmailEventFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachEmailEventPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.OutreachEmailEventFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachEmailEventPayload>
+        }
+        findFirst: {
+          args: Prisma.OutreachEmailEventFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachEmailEventPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.OutreachEmailEventFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachEmailEventPayload>
+        }
+        findMany: {
+          args: Prisma.OutreachEmailEventFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachEmailEventPayload>[]
+        }
+        create: {
+          args: Prisma.OutreachEmailEventCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachEmailEventPayload>
+        }
+        createMany: {
+          args: Prisma.OutreachEmailEventCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.OutreachEmailEventCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachEmailEventPayload>[]
+        }
+        delete: {
+          args: Prisma.OutreachEmailEventDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachEmailEventPayload>
+        }
+        update: {
+          args: Prisma.OutreachEmailEventUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachEmailEventPayload>
+        }
+        deleteMany: {
+          args: Prisma.OutreachEmailEventDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.OutreachEmailEventUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.OutreachEmailEventUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachEmailEventPayload>[]
+        }
+        upsert: {
+          args: Prisma.OutreachEmailEventUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutreachEmailEventPayload>
+        }
+        aggregate: {
+          args: Prisma.OutreachEmailEventAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOutreachEmailEvent>
+        }
+        groupBy: {
+          args: Prisma.OutreachEmailEventGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OutreachEmailEventGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.OutreachEmailEventCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OutreachEmailEventCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -2691,6 +2991,61 @@ export const PageViewScalarFieldEnum = {
 export type PageViewScalarFieldEnum = (typeof PageViewScalarFieldEnum)[keyof typeof PageViewScalarFieldEnum]
 
 
+export const OutreachScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  name: 'name',
+  company: 'company',
+  phone: 'phone',
+  source: 'source',
+  status: 'status',
+  unsubscribed: 'unsubscribed',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OutreachScalarFieldEnum = (typeof OutreachScalarFieldEnum)[keyof typeof OutreachScalarFieldEnum]
+
+
+export const CampaignScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  createdAt: 'createdAt'
+} as const
+
+export type CampaignScalarFieldEnum = (typeof CampaignScalarFieldEnum)[keyof typeof CampaignScalarFieldEnum]
+
+
+export const OutreachScheduledEmailScalarFieldEnum = {
+  id: 'id',
+  leadId: 'leadId',
+  campaignId: 'campaignId',
+  subject: 'subject',
+  body: 'body',
+  scheduledAt: 'scheduledAt',
+  sentAt: 'sentAt',
+  status: 'status',
+  failReason: 'failReason',
+  parentEmailId: 'parentEmailId',
+  trackingId: 'trackingId',
+  createdAt: 'createdAt'
+} as const
+
+export type OutreachScheduledEmailScalarFieldEnum = (typeof OutreachScheduledEmailScalarFieldEnum)[keyof typeof OutreachScheduledEmailScalarFieldEnum]
+
+
+export const OutreachEmailEventScalarFieldEnum = {
+  id: 'id',
+  scheduledEmailId: 'scheduledEmailId',
+  type: 'type',
+  url: 'url',
+  timestamp: 'timestamp'
+} as const
+
+export type OutreachEmailEventScalarFieldEnum = (typeof OutreachEmailEventScalarFieldEnum)[keyof typeof OutreachEmailEventScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -2886,6 +3241,48 @@ export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$Prisma
 
 
 /**
+ * Reference to a field of type 'OutreachStatus'
+ */
+export type EnumOutreachStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OutreachStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'OutreachStatus[]'
+ */
+export type ListEnumOutreachStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OutreachStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'OutreachEmailStatus'
+ */
+export type EnumOutreachEmailStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OutreachEmailStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'OutreachEmailStatus[]'
+ */
+export type ListEnumOutreachEmailStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OutreachEmailStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'OutreachEmailEventType'
+ */
+export type EnumOutreachEmailEventTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OutreachEmailEventType'>
+    
+
+
+/**
+ * Reference to a field of type 'OutreachEmailEventType[]'
+ */
+export type ListEnumOutreachEmailEventTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OutreachEmailEventType[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -3033,6 +3430,10 @@ export type GlobalOmitConfig = {
   activityEntry?: Prisma.ActivityEntryOmit
   blogPost?: Prisma.BlogPostOmit
   pageView?: Prisma.PageViewOmit
+  outreach?: Prisma.OutreachOmit
+  campaign?: Prisma.CampaignOmit
+  outreachScheduledEmail?: Prisma.OutreachScheduledEmailOmit
+  outreachEmailEvent?: Prisma.OutreachEmailEventOmit
 }
 
 /* Types for Logging */
