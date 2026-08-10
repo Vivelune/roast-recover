@@ -5,6 +5,7 @@
   import { Resend } from "resend";
   import { prisma } from "@/lib/prisma";
   import { rewriteLinksForTracking } from "@/lib/outreach/rewriteLinks";
+import { linkifyPlainUrls } from "@/lib/outreach/linkifyBody";
 
   const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -93,27 +94,20 @@
             },
           });
 
-        const trackingPixel = `
-          <img
-            src="${process.env.NEXT_PUBLIC_APP_URL}/api/track/open/${scheduledEmail.trackingId}"
-            width="1"
-            height="1"
-            style="display:none;"
-            alt=""
-          />
-        `;
+          const trackingPixel = `<img src="${process.env.NEXT_PUBLIC_APP_URL}/api/track/open/${scheduledEmail.trackingId}" width="1" height="1" style="display:none;" />`;
 
-        const htmlBody =
-          personalizedBody
-            .split("\n")
-            .map((line) => `<p>${line}</p>`)
-            .join("") +
-          buildFooter(lead.id) +
-          trackingPixel;
-
-
-          const trackedHtmlBody = rewriteLinksForTracking( htmlBody, scheduledEmail.trackingId, process.env.NEXT_PUBLIC_APP_URL! );
-
+          const htmlBody =
+            linkifyPlainUrls(
+              personalizedBody.split("\n").map((line) => `<p>${line}</p>`).join("")
+            ) +
+            buildFooter(lead.id) +
+            trackingPixel;
+          
+          const trackedHtmlBody = rewriteLinksForTracking(
+            htmlBody,
+            scheduledEmail.trackingId,
+            process.env.NEXT_PUBLIC_APP_URL!
+          );
           
         try {
           const { data, error } = await resend.emails.send({
