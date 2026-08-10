@@ -1,4 +1,6 @@
+
 // app/api/track/open/[trackingId]/route.ts
+
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
@@ -10,24 +12,42 @@ const PIXEL = Buffer.from(
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { trackingId: string } }
+  { params }: { params: Promise<{ trackingId: string }> }
 ) {
   try {
-    const email = await prisma.outreachScheduledEmail.findUnique({
-      where: { trackingId: params.trackingId },
-    });
+    const { trackingId } = await params;
+
+    const email =
+      await prisma.outreachScheduledEmail.findUnique({
+        where: {
+          trackingId,
+        },
+      });
 
     if (email) {
       await prisma.outreachEmailEvent.create({
-        data: { scheduledEmailId: email.id, type: "OPEN" },
+        data: {
+          scheduledEmailId: email.id,
+          type: "OPEN",
+        },
       });
 
-      // Only bump lead status forward, never backward from REPLIED/CONVERTED
-      const lead = await prisma.outreach.findUnique({ where: { id: email.leadId } });
+      // Only bump lead status forward.
+      // Never move REPLIED/CONVERTED backwards.
+      const lead = await prisma.outreach.findUnique({
+        where: {
+          id: email.leadId,
+        },
+      });
+
       if (lead && lead.status === "CONTACTED") {
         await prisma.outreach.update({
-          where: { id: email.leadId },
-          data: { status: "OPENED" },
+          where: {
+            id: email.leadId,
+          },
+          data: {
+            status: "OPENED",
+          },
         });
       }
     }
@@ -39,7 +59,8 @@ export async function GET(
   return new NextResponse(PIXEL, {
     headers: {
       "Content-Type": "image/gif",
-      "Cache-Control": "no-store, no-cache, must-revalidate, private",
+      "Cache-Control":
+        "no-store, no-cache, must-revalidate, private",
     },
   });
 }
