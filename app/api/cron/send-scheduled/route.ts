@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { prisma } from "@/lib/prisma";
+import { rewriteLinksForTracking } from "@/lib/outreach/rewriteLinks";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -57,11 +58,13 @@ export async function GET(req: NextRequest) {
       buildFooter(email.leadId) +
       trackingPixel;
 
+      const trackedHtmlBody = rewriteLinksForTracking( htmlBody, email.trackingId, process.env.NEXT_PUBLIC_APP_URL! );
+
     const { data, error } = await resend.emails.send({
       from: "Atif <ritual@roastandrecover.com>",
       to: email.lead.email,
       subject: email.subject,
-      html: htmlBody,
+      html: trackedHtmlBody,
     });
 
     if (error) {
