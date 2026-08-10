@@ -475,3 +475,82 @@ model PageView {
   @@index([createdAt])
   @@index([sessionId])
 }
+
+model Outreach {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  company      String?
+  phone        String?
+  source       String?  // "instagram_outreach", "email_list_nashville", etc.
+  status       OutreachStatus @default(NEW)
+  unsubscribed Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  scheduledEmails OutreachScheduledEmail[]
+}
+
+enum OutreachStatus {
+  NEW
+  CONTACTED
+  OPENED
+  REPLIED
+  CONVERTED
+  UNSUBSCRIBED
+  DEAD
+}
+
+model Campaign {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+
+  scheduledEmails OutreachScheduledEmail[]
+}
+
+model OutreachScheduledEmail {
+  id            String    @id @default(cuid())
+  leadId        String
+  lead          Outreach      @relation(fields: [leadId], references: [id])
+  campaignId    String?
+  campaign      Campaign? @relation(fields: [campaignId], references: [id])
+
+  subject       String
+  body          String    @db.Text
+  scheduledAt   DateTime
+  sentAt        DateTime?
+  status        OutreachEmailStatus @default(PENDING)
+  failReason    String?
+
+  parentEmailId String?
+  parentEmail   OutreachScheduledEmail?  @relation("FollowUps", fields: [parentEmailId], references: [id])
+  followUps     OutreachScheduledEmail[] @relation("FollowUps")
+
+  trackingId    String    @unique @default(cuid())
+  events        OutreachEmailEvent[]
+
+  createdAt     DateTime  @default(now())
+}
+
+enum OutreachEmailStatus {
+  PENDING
+  SENT
+  FAILED
+  CANCELLED
+}
+
+model OutreachEmailEvent {
+  id               String   @id @default(cuid())
+  scheduledEmailId String
+  scheduledEmail   OutreachScheduledEmail @relation(fields: [scheduledEmailId], references: [id])
+  type             OutreachEmailEventType
+  url              String?  // for click events, the destination URL
+  timestamp        DateTime @default(now())
+}
+
+enum OutreachEmailEventType {
+  OPEN
+  CLICK
+}
