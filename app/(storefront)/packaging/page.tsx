@@ -5,6 +5,7 @@ import FadeIn from "@/components/FadeIn";
 import PackagingFilters from "@/components/PackagingFilters";
 import { markOnboardingStep } from "@/app/actions/onboarding";
 import StockBadge from "@/components/StockBadge";
+import SourceOnDemandBanner from "@/components/SourceOnDemandBanner";
 
 export const metadata = {
   title: "Café Packaging — Cups, Lids & Bags",
@@ -56,7 +57,7 @@ export default async function PackagingPage({
         </p>
       </FadeIn>
       </div>
-
+      <SourceOnDemandBanner />
       <div className="flex flex-col md:flex-row gap-12">
         <aside className="w-full md:w-56 flex-shrink-0">
           <PackagingFilters

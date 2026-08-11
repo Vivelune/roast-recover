@@ -4,6 +4,7 @@ import Image from "next/image";
 import { ShieldCheck, SlidersHorizontal } from "lucide-react";
 import FadeIn from "@/components/FadeIn";
 import EquipmentFilters from "@/components/EquipmentFilters";
+import SourceOnDemandBanner from "@/components/SourceOnDemandBanner";
 
 
 export const metadata = {
@@ -68,7 +69,7 @@ export default async function EquipmentPage({
           </p>
         </div>
       </FadeIn>
-
+      <SourceOnDemandBanner />
       <div className="flex flex-col lg:flex-row gap-8 items-start">
         {/* Sidebar and Mobile Trigger wrapper */}
         <EquipmentFilters

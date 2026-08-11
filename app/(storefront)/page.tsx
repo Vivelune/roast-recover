@@ -5,6 +5,7 @@ import AnimatedCounter from "@/components/AnimatedCounter";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import TestimonialCard from "@/components/TestimonialCard";
+import SourceOnDemandBanner from "@/components/SourceOnDemandBanner";
 
 
 
@@ -138,6 +139,12 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+  <FadeIn>
+    <SourceOnDemandBanner />
+  </FadeIn>
+</section>
+
       {/* TESTIMONIAL SECTION */}
       {testimonials.length > 0 && (
         <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
@@ -175,20 +182,37 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* WHY DIRECT SOURCING */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 border-t border-gray-100">
-        <FadeIn>
-          <p className="text-xs uppercase tracking-[0.15em] text-ember font-medium mb-3">Why direct sourcing</p>
-          <h2 className="font-display font-semibold text-2xl sm:text-3xl text-char mb-12 max-w-lg tracking-tight">
-            Three layers of markup, removed.
-          </h2>
-        </FadeIn>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
-          <FadeIn delay={0}><Numbered n="01" title="Factory verified" copy="We work only with manufacturers whose models already carry UL or NSF certification — no shortcuts." /></FadeIn>
-          <FadeIn delay={0.1}><Numbered n="02" title="No distributor markup" copy="Pricing reflects factory cost plus a transparent margin, not three resellers' worth of markup." /></FadeIn>
-          <FadeIn delay={0.2}><Numbered n="03" title="Built per order" copy="We don't sit on warehouse inventory — your equipment is sourced when you order, keeping costs down." /></FadeIn>
-        </div>
-      </section>
+{/* WHY DIRECT SOURCING */}
+<section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 border-t border-gray-100">
+  <FadeIn>
+    <p className="text-xs uppercase tracking-[0.15em] text-ember font-medium mb-3">Why direct sourcing</p>
+    <h2 className="font-display font-semibold text-2xl sm:text-3xl text-char mb-12 max-w-lg tracking-tight">
+      Three layers of markup, removed.
+    </h2>
+  </FadeIn>
+
+  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+    <FadeIn delay={0}><Numbered n="01" title="Factory verified" copy="We work only with manufacturers whose models already carry UL or NSF certification — no shortcuts." pulseDelay="0s" /></FadeIn>
+    <FadeIn delay={0.1}><Numbered n="02" title="No distributor markup" copy="Pricing reflects factory cost plus a transparent margin, not three resellers' worth of markup." pulseDelay="0.6s" /></FadeIn>
+    <FadeIn delay={0.2}><Numbered n="03" title="Built per order" copy="We don't sit on warehouse inventory — your equipment is sourced when you order, keeping costs down." pulseDelay="1.2s" /></FadeIn>
+  </div>
+
+  {/* CTA */}
+  <FadeIn delay={0.35}>
+    <div className="mt-14 flex flex-col sm:flex-row items-center gap-5 justify-between border-t border-gray-100 pt-10">
+      <p className="text-ash text-sm sm:text-base max-w-sm text-center sm:text-left">
+        See exactly how much you'd save switching from a distributor.
+      </p>
+      <Link
+        href="/equipment"
+        className="group shrink-0 bg-ember hover:bg-ember-dark text-white px-6 py-3 rounded-md text-sm font-medium transition-colors inline-flex items-center justify-center gap-2"
+      >
+        See the pricing difference
+        <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
+      </Link>
+    </div>
+  </FadeIn>
+</section>
 
       {/* HOW IT WORKS */}
       <section className="bg-steam">
@@ -284,15 +308,35 @@ function TrustItem({ icon, title, copy }: { icon: React.ReactNode; title: string
   );
 }
 
-function Numbered({ n, title, copy }: { n: string; title: string; copy: string }) {
+function Numbered({
+  n,
+  title,
+  copy,
+  pulseDelay = "0s",
+}: {
+  n: string;
+  title: string;
+  copy: string;
+  pulseDelay?: string;
+}) {
   return (
-    <div className="text-center sm:text-left">
-      <p className="font-display text-ember/40 text-3xl font-semibold mb-3">{n}</p>
-      <p className="font-medium text-char text-[15px] mb-2">{title}</p>
-      <p className="text-ash text-sm leading-relaxed max-w-xs mx-auto sm:mx-0">{copy}</p>
+    <div
+      className="group relative text-center sm:text-left p-6 rounded-2xl border border-transparent hover:border-ember/20 hover:bg-steam/30 transition-all duration-300 hover:-translate-y-1 cursor-default"
+      style={{ animation: `card-pulse 3.5s ease-in-out ${pulseDelay} infinite` }}
+    >
+      <p className="font-display text-ember/25 group-hover:text-ember/90 text-3xl font-semibold mb-3 transition-all duration-300 group-hover:scale-105 origin-left">
+        {n}
+      </p>
+      <p className="font-medium text-char text-[15px] mb-2 transition-colors duration-300">
+        {title}
+      </p>
+      <p className="text-ash text-sm leading-relaxed max-w-xs mx-auto sm:mx-0">
+        {copy}
+      </p>
     </div>
   );
 }
+
 
 function Step({ icon, step, copy }: { icon: React.ReactNode; step: string; copy: string }) {
   return (

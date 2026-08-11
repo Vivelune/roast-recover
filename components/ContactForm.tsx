@@ -8,14 +8,14 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 
-export default function ContactForm({ productId }: { productId?: string }) {
+export default function ContactForm({ productId, defaultInterest }: { productId?: string, defaultInterest?: string; }) {
   const [form, setForm] = useState({
     name: "",
     email: "",
     company: "",
     phone: "",
     message: "",
-    interest: "equipment",
+    interest: defaultInterest ?? "equipment",
   });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
