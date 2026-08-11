@@ -6,6 +6,7 @@
   import { prisma } from "@/lib/prisma";
   import { rewriteLinksForTracking } from "@/lib/outreach/rewriteLinks";
 import { linkifyPlainUrls } from "@/lib/outreach/linkifyBody";
+import { buildSignature } from "@/lib/outreach/buildSignature";
 
   const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -100,6 +101,7 @@ import { linkifyPlainUrls } from "@/lib/outreach/linkifyBody";
             linkifyPlainUrls(
               personalizedBody.split("\n").map((line) => `<p>${line}</p>`).join("")
             ) +
+            buildSignature() +
             buildFooter(lead.id) +
             trackingPixel;
           

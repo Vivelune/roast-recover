@@ -4,6 +4,7 @@ import { Resend } from "resend";
 import { prisma } from "@/lib/prisma";
 import { rewriteLinksForTracking } from "@/lib/outreach/rewriteLinks";
 import { linkifyPlainUrls } from "@/lib/outreach/linkifyBody";
+import { buildSignature } from "@/lib/outreach/buildSignature";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -58,6 +59,7 @@ export async function GET(req: NextRequest) {
       linkifyPlainUrls(
         email.body.split("\n").map((line) => `<p>${line}</p>`).join("")
       ) +
+      buildSignature() +
       buildFooter(email.leadId) +
       trackingPixel;
     
