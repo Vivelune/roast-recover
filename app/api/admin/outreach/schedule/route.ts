@@ -6,6 +6,8 @@ function renderTemplate(template: string, vars: Record<string, string>) {
   return template.replace(/\{\{(\w+)\}\}/g, (_, key) => vars[key] ?? "");
 }
 
+
+
 export async function POST(req: NextRequest) {
   const { leadIds, subject, body, scheduledAt, campaignId, parentEmailId } = await req.json();
 

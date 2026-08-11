@@ -9,6 +9,7 @@ import {
   BarChart3,
   ArrowRight,
   Mail,
+  Clock,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -54,6 +55,12 @@ export default async function OutreachHubPage() {
       label: "Analytics",
       description: "Opens, clicks, and reply rates by campaign",
       icon: BarChart3,
+    },
+    {
+      href: "/admin/outreach/scheduled",
+      label: "Scheduled queue",
+      description: "See what's queued to send and when",
+      icon: Clock, // add to your lucide-react import list
     },
   ];
 
